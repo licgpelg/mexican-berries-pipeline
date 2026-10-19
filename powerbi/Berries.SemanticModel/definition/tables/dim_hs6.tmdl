@@ -1,0 +1,35 @@
+/// Fracción arancelaria (HS6). 0810.20 junta frambuesa y zarzamora; 0810.40 incluye otros Vaccinium; papa y maíz sin semilla (0701.90, 1005.90). El tomate verde no tiene fracción propia.
+table dim_hs6
+	lineageTag: 0fbd9085-79bd-4845-8667-51b5f1c6146f
+
+	column hs6
+		dataType: string
+		lineageTag: 8ec26cb0-908e-47ca-8525-24dec1078160
+		summarizeBy: none
+		sourceColumn: hs6
+
+	column grupo_comercio
+		dataType: string
+		lineageTag: 7f5ad37c-9df5-4e33-b243-f03f75804bb4
+		summarizeBy: none
+		sourceColumn: grupo_comercio
+		sortByColumn: hs6
+
+	column grupo
+		dataType: string
+		lineageTag: be009af4-640c-4d56-ac63-138a82cffd8f
+		summarizeBy: none
+		sourceColumn: grupo
+
+	partition dim_hs6 = m
+		mode: import
+		source =
+				let
+				    Origen = Csv.Document(File.Contents(RutaDatos & "dim_hs6.csv"), [Delimiter = ",", Encoding = 65001, QuoteStyle = QuoteStyle.Csv]),
+				    Encabezados = Table.PromoteHeaders(Origen, [PromoteAllScalars = true]),
+				    Tipos = Table.TransformColumnTypes(Encabezados, {{"hs6", type text}, {"grupo_comercio", type text}, {"grupo", type text}}, "en-US")
+				in
+				    Tipos
+
+	annotation PBI_ResultType = Table
+

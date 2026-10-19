@@ -1,0 +1,29 @@
+table dim_flujo
+	lineageTag: 6dc135c8-b2e0-461b-9c79-2ece79ca0509
+
+	column id_flujo
+		dataType: int64
+		isHidden
+		lineageTag: 8a37aad5-09d9-42c5-bd96-5db078a5937c
+		summarizeBy: none
+		sourceColumn: id_flujo
+
+	column flujo
+		dataType: string
+		lineageTag: 4f25d490-cc03-4067-b9cd-cef278c2655a
+		summarizeBy: none
+		sourceColumn: flujo
+		sortByColumn: id_flujo
+
+	partition dim_flujo = m
+		mode: import
+		source =
+				let
+				    Origen = Csv.Document(File.Contents(RutaDatos & "dim_flujo.csv"), [Delimiter = ",", Encoding = 65001, QuoteStyle = QuoteStyle.Csv]),
+				    Encabezados = Table.PromoteHeaders(Origen, [PromoteAllScalars = true]),
+				    Tipos = Table.TransformColumnTypes(Encabezados, {{"id_flujo", Int64.Type}, {"flujo", type text}}, "en-US")
+				in
+				    Tipos
+
+	annotation PBI_ResultType = Table
+

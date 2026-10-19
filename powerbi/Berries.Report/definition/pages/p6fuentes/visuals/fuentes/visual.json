@@ -1,0 +1,219 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.12.0/schema.json",
+  "name": "fuentes",
+  "position": {
+    "x": 32,
+    "y": 116,
+    "z": 4000,
+    "height": 580,
+    "width": 1216,
+    "tabOrder": 4000
+  },
+  "visual": {
+    "visualType": "textbox",
+    "objects": {
+      "general": [
+        {
+          "properties": {
+            "paragraphs": [
+              {
+                "textRuns": [
+                  {
+                    "value": "Fuentes",
+                    "textStyle": {
+                      "fontSize": "13pt",
+                      "color": "#1F4D2C",
+                      "fontWeight": "bold"
+                    }
+                  }
+                ]
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": "SIAP / SADER — Cierre de la producción agrícola, 2003-2025, por municipio. Datos abiertos del Gobierno de México; licencia por confirmar con el SIAP. https://nube.agricultura.gob.mx/datosAbiertos/Agricola.php",
+                    "textStyle": {
+                      "fontSize": "10pt",
+                      "color": "#1F2421"
+                    }
+                  }
+                ]
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": "DataMéxico — Secretaría de Economía. Comercio exterior mensual por fracción arancelaria (HS6) y país, 2006 a julio de 2026, en USD. Licencia por confirmar. https://www.economia.gob.mx/datamexico/",
+                    "textStyle": {
+                      "fontSize": "10pt",
+                      "color": "#1F2421"
+                    }
+                  }
+                ]
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": "FAOSTAT — FAO, Crops and livestock products (QCL), 1961-2024. Licencia CC BY 4.0. https://www.fao.org/faostat/",
+                    "textStyle": {
+                      "fontSize": "10pt",
+                      "color": "#1F2421"
+                    }
+                  }
+                ]
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": "Mapa de estados: el mapa de México incluido en el visual Shape map de Power BI.",
+                    "textStyle": {
+                      "fontSize": "10pt",
+                      "color": "#1F2421"
+                    }
+                  }
+                ]
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": "",
+                    "textStyle": {
+                      "fontSize": "6pt",
+                      "color": "#1F2421"
+                    }
+                  }
+                ]
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": "Metodología y advertencias",
+                    "textStyle": {
+                      "fontSize": "13pt",
+                      "color": "#1F4D2C",
+                      "fontWeight": "bold"
+                    }
+                  }
+                ]
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": "· Cifras en pesos y dólares corrientes, sin deflactar: los crecimientos de valor incluyen inflación.",
+                    "textStyle": {
+                      "fontSize": "10pt",
+                      "color": "#1F2421"
+                    }
+                  }
+                ]
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": "· Rendimiento y precio medio rural se calculan como cocientes (producción/superficie, valor/producción), no como promedios de municipios.",
+                    "textStyle": {
+                      "fontSize": "10pt",
+                      "color": "#1F2421"
+                    }
+                  }
+                ]
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": "· Se excluye la planta de vivero de fresa, que el SIAP publica en plantas bajo el mismo cultivo.",
+                    "textStyle": {
+                      "fontSize": "10pt",
+                      "color": "#1F2421"
+                    }
+                  }
+                ]
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": "· El CSV abierto del SIAP de 2020 y 2021 no incluye el arándano; la FAO sí lo tiene. El hueco se declara, no se rellena.",
+                    "textStyle": {
+                      "fontSize": "10pt",
+                      "color": "#1F2421"
+                    }
+                  }
+                ]
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": "· Comercio: frambuesa y zarzamora comparten la fracción 0810.20; el arándano (0810.40) incluye otros Vaccinium. El tomate verde no tiene fracción propia.",
+                    "textStyle": {
+                      "fontSize": "10pt",
+                      "color": "#1F2421"
+                    }
+                  }
+                ]
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": "· FAO: «Tomatoes» de México suma jitomate y tomate verde; la FAO no separa la zarzamora.",
+                    "textStyle": {
+                      "fontSize": "10pt",
+                      "color": "#1F2421"
+                    }
+                  }
+                ]
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": "· Verificación: el SIAP cuadra con la FAO (diferencias menores al 3 %) y DataMéxico con sus propios totales anuales.",
+                    "textStyle": {
+                      "fontSize": "10pt",
+                      "color": "#1F2421"
+                    }
+                  }
+                ]
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": "",
+                    "textStyle": {
+                      "fontSize": "6pt",
+                      "color": "#1F2421"
+                    }
+                  }
+                ]
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": "Proyecto personal, sin relación con ninguna empresa. Datos públicos.",
+                    "textStyle": {
+                      "fontSize": "10pt",
+                      "color": "#5E6660"
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "visualContainerObjects": {
+      "background": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "drillFilterOtherVisuals": true
+  }
+}

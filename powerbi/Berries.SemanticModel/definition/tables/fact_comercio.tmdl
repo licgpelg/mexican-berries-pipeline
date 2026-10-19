@@ -1,0 +1,118 @@
+/// DataMéxico (SE): comercio exterior de México por mes × HS6 × flujo × país, en USD, desde 2006. Sin volumen.
+table fact_comercio
+	lineageTag: 026c9f40-56ca-42a6-b416-4f1ad485fb6e
+
+	/// Valor en dólares corrientes, DataMéxico. fact_comercio cuelga de dim_hs6, no de dim_cultivo (0810.20 es frambuesa y zarzamora a la vez): el TREATAS hace que el segmentador de cultivo filtre también el comercio. Frambuesa sola o zarzamora sola traen la fracción entera.
+	measure 'Exportaciones (USD)' =
+			CALCULATE (
+			    SUM ( fact_comercio[valor_usd] ),
+			    KEEPFILTERS ( dim_flujo[flujo] = "Exportación" ),
+			    KEEPFILTERS ( TREATAS ( VALUES ( dim_cultivo[hs6] ), dim_hs6[hs6] ) )
+			)
+		formatString: \$#,0
+		displayFolder: Comercio
+		lineageTag: f4546883-1ebf-4351-995f-00dfc7bb1aa9
+
+	/// Igual que Exportaciones (USD): el cultivo filtra el comercio a través de su fracción.
+	measure 'Importaciones (USD)' =
+			CALCULATE (
+			    SUM ( fact_comercio[valor_usd] ),
+			    KEEPFILTERS ( dim_flujo[flujo] = "Importación" ),
+			    KEEPFILTERS ( TREATAS ( VALUES ( dim_cultivo[hs6] ), dim_hs6[hs6] ) )
+			)
+		formatString: \$#,0
+		displayFolder: Comercio
+		lineageTag: 7abc8249-b90f-47da-89d4-2080e24fe2a3
+
+	measure 'Balanza comercial (USD)' = [Exportaciones (USD)] - [Importaciones (USD)]
+		formatString: \$#,0
+		displayFolder: Comercio
+		lineageTag: 9ece7dbe-6a8e-4365-9e36-494b06aa985e
+
+	/// Mismo periodo del año anterior, recortado al último mes publicado: con el año en curso incompleto compara solo los meses que ya hay (enero-julio de 2026 contra enero-julio de 2025), no contra el año anterior completo.
+	measure 'Exportaciones año anterior (USD)' =
+			VAR fin_datos = EOMONTH ( [Comercio: último mes], 0 )
+			RETURN
+			    CALCULATE (
+			        CALCULATE ( [Exportaciones (USD)], DATEADD ( dim_fecha[fecha], -1, YEAR ) ),
+			        KEEPFILTERS ( dim_fecha[fecha] <= fin_datos )
+			    )
+		formatString: \$#,0
+		displayFolder: Comercio
+		lineageTag: 83163b5d-6520-4fb8-ba3c-6c593e1b6182
+
+	/// Contra el mismo periodo del año anterior, solo hasta el último mes publicado.
+	measure 'Var. exportaciones %' =
+			VAR actual = [Exportaciones (USD)]
+			VAR anterior = [Exportaciones año anterior (USD)]
+			RETURN
+				DIVIDE ( actual - anterior, anterior )
+		formatString: 0.0%
+		displayFolder: Comercio
+		lineageTag: 5dfc49dc-4717-4e1d-a1f0-6beefae73e75
+
+	measure 'Exportaciones a EE. UU. %' =
+			DIVIDE (
+				CALCULATE ( [Exportaciones (USD)], dim_pais_comercio[id_pais_iso3] = "USA" ),
+				CALCULATE ( [Exportaciones (USD)], REMOVEFILTERS ( dim_pais_comercio ) )
+			)
+		formatString: 0.0%
+		displayFolder: Comercio
+		lineageTag: cde7521b-9fb9-4581-bab5-87fde5aa7abb
+
+	/// Último mes publicado por DataMéxico.
+	measure 'Comercio: último mes' = CALCULATE ( MAX ( fact_comercio[mes] ), REMOVEFILTERS () )
+		formatString: mmmm yyyy
+		displayFolder: Comercio
+		lineageTag: e7b80033-bb9c-4b4e-98d4-5e949ccd2037
+
+	column mes
+		dataType: dateTime
+		isHidden
+		lineageTag: 59976908-dc79-48a0-9ea8-1cb4c9442919
+		summarizeBy: none
+		sourceColumn: mes
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column hs6
+		dataType: string
+		isHidden
+		lineageTag: 92d596da-de83-4b5d-970c-e78a61f00194
+		summarizeBy: none
+		sourceColumn: hs6
+
+	column id_flujo
+		dataType: int64
+		isHidden
+		lineageTag: 13370ddf-e893-4f79-b0f4-d57168fd0610
+		summarizeBy: none
+		sourceColumn: id_flujo
+
+	column id_pais_iso3
+		dataType: string
+		isHidden
+		lineageTag: 8c1afc20-5511-4c5c-9fd6-f5caed2ffada
+		summarizeBy: none
+		sourceColumn: id_pais_iso3
+
+	column valor_usd
+		dataType: double
+		isHidden
+		formatString: #,0.00
+		lineageTag: 4091b89e-41fa-453d-b07b-0336169295dd
+		summarizeBy: sum
+		sourceColumn: valor_usd
+
+	partition fact_comercio = m
+		mode: import
+		source =
+				let
+				    Origen = Csv.Document(File.Contents(RutaDatos & "fact_comercio.csv"), [Delimiter = ",", Encoding = 65001, QuoteStyle = QuoteStyle.Csv]),
+				    Encabezados = Table.PromoteHeaders(Origen, [PromoteAllScalars = true]),
+				    Tipos = Table.TransformColumnTypes(Encabezados, {{"mes", type date}, {"hs6", type text}, {"id_flujo", Int64.Type}, {"id_pais_iso3", type text}, {"valor_usd", type number}}, "en-US")
+				in
+				    Tipos
+
+	annotation PBI_ResultType = Table
+

@@ -1,0 +1,86 @@
+{
+  "name": "Berries de México",
+  "dataColors": [
+    "#8E1B3A",
+    "#2F7D4A",
+    "#D9822B",
+    "#3F6FA8",
+    "#C9A227",
+    "#6B4E8C",
+    "#3E8E7E",
+    "#A0522D"
+  ],
+  "foreground": "#1F2421",
+  "background": "#FFFFFF",
+  "tableAccent": "#8E1B3A",
+  "minimum": "#F6E7EA",
+  "center": "#C4566F",
+  "maximum": "#5C0F25",
+  "good": "#2F7D4A",
+  "neutral": "#C9A227",
+  "bad": "#B23A48",
+  "textClasses": {
+    "callout": {
+      "fontFace": "Segoe UI Semibold",
+      "fontSize": 26,
+      "color": "#8E1B3A"
+    },
+    "title": {
+      "fontFace": "Segoe UI Semibold",
+      "fontSize": 11,
+      "color": "#1F2421"
+    },
+    "header": {
+      "fontFace": "Segoe UI Semibold",
+      "fontSize": 12,
+      "color": "#1F2421"
+    },
+    "label": {
+      "fontFace": "Segoe UI",
+      "fontSize": 10,
+      "color": "#3B423D"
+    }
+  },
+  "visualStyles": {
+    "*": {
+      "*": {
+        "valueAxis": [
+          {
+            "gridlineColor": {
+              "solid": {
+                "color": "#ECE8DF"
+              }
+            }
+          }
+        ]
+      }
+    },
+    "tableEx": {
+      "*": {
+        "columnHeaders": [
+          {
+            "fontColor": {
+              "solid": {
+                "color": "#FFFFFF"
+              }
+            },
+            "backColor": {
+              "solid": {
+                "color": "#8E1B3A"
+              }
+            }
+          }
+        ],
+        "values": [
+          {
+            "backColorSecondary": {
+              "solid": {
+                "color": "#F8F6F1"
+              }
+            }
+          }
+        ]
+      }
+    }
+  }
+}

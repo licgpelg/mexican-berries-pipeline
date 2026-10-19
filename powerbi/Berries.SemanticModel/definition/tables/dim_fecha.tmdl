@@ -1,0 +1,70 @@
+/// Calendario diario de 1961 (primer año de FAOSTAT) al 31 de diciembre del año en curso. Los hechos anuales se relacionan por el 1 de enero.
+table dim_fecha
+	lineageTag: 1a315ecf-b336-448d-a076-d69568b93f56
+	dataCategory: Time
+
+	column fecha
+		dataType: dateTime
+		isKey
+		formatString: dd/mm/yyyy
+		lineageTag: 94ea1f77-4ac9-4453-8cce-bb5161141891
+		summarizeBy: none
+		sourceColumn: fecha
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	/// Año
+	column anio
+		dataType: int64
+		lineageTag: f4c2b81c-0792-4f8c-a7c6-f96437ac81f6
+		summarizeBy: none
+		sourceColumn: anio
+
+	column trimestre
+		dataType: int64
+		lineageTag: 54b7b055-9678-44a1-b89b-1709b275a082
+		summarizeBy: none
+		sourceColumn: trimestre
+
+	column mes
+		dataType: int64
+		isHidden
+		lineageTag: 1c762e01-426f-4b44-a9bf-5d14f5904fdf
+		summarizeBy: none
+		sourceColumn: mes
+
+	column nombre_mes
+		dataType: string
+		lineageTag: bf8ddaaf-3c37-45b5-ad4a-acbd231aa168
+		summarizeBy: none
+		sourceColumn: nombre_mes
+		sortByColumn: mes
+
+	column mes_corto
+		dataType: string
+		lineageTag: 14ce436f-e27e-430e-b1cd-4e1db16f3c29
+		summarizeBy: none
+		sourceColumn: mes_corto
+		sortByColumn: mes
+
+	column inicio_mes
+		dataType: dateTime
+		formatString: mmm yyyy
+		lineageTag: b8333823-784e-4e1d-b0ec-e766cb26e2f6
+		summarizeBy: none
+		sourceColumn: inicio_mes
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	partition dim_fecha = m
+		mode: import
+		source =
+				let
+				    Origen = Csv.Document(File.Contents(RutaDatos & "dim_fecha.csv"), [Delimiter = ",", Encoding = 65001, QuoteStyle = QuoteStyle.Csv]),
+				    Encabezados = Table.PromoteHeaders(Origen, [PromoteAllScalars = true]),
+				    Tipos = Table.TransformColumnTypes(Encabezados, {{"fecha", type date}, {"anio", Int64.Type}, {"trimestre", Int64.Type}, {"mes", Int64.Type}, {"nombre_mes", type text}, {"mes_corto", type text}, {"inicio_mes", type date}}, "en-US")
+				in
+				    Tipos
+
+	annotation PBI_ResultType = Table
+

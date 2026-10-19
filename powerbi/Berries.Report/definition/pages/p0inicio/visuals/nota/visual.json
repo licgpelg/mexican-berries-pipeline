@@ -1,0 +1,63 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.12.0/schema.json",
+  "name": "nota",
+  "position": {
+    "x": 32,
+    "y": 612,
+    "z": 14000,
+    "height": 90,
+    "width": 1216,
+    "tabOrder": 14000
+  },
+  "visual": {
+    "visualType": "textbox",
+    "objects": {
+      "general": [
+        {
+          "properties": {
+            "paragraphs": [
+              {
+                "textRuns": [
+                  {
+                    "value": "Sinaloa es el 1.er productor nacional de tomate rojo y tomate verde, y el 2.º de arándano, papa y maíz grano (SIAP, 2025). En el mapa de la página Producción, clic derecho sobre un estado → Obtener detalles para ver su ficha.",
+                    "textStyle": {
+                      "fontSize": "10pt",
+                      "color": "#1F2421"
+                    }
+                  }
+                ]
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": "Proyecto personal con datos públicos: SIAP/SADER, DataMéxico (Secretaría de Economía) y FAOSTAT (FAO, CC BY 4.0). Al elegir cultivos distintos (por ejemplo fresa y maíz) sus toneladas se suman tal cual: compara mejor de uno en uno o por grupo.",
+                    "textStyle": {
+                      "fontSize": "9pt",
+                      "color": "#5E6660"
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "visualContainerObjects": {
+      "background": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "drillFilterOtherVisuals": true
+  }
+}

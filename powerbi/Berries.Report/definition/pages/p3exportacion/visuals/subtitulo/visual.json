@@ -1,0 +1,52 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.12.0/schema.json",
+  "name": "subtitulo",
+  "position": {
+    "x": 32,
+    "y": 66,
+    "z": 3000,
+    "height": 30,
+    "width": 850,
+    "tabOrder": 3000
+  },
+  "visual": {
+    "visualType": "textbox",
+    "objects": {
+      "general": [
+        {
+          "properties": {
+            "paragraphs": [
+              {
+                "textRuns": [
+                  {
+                    "value": "Dólares corrientes · DataMéxico (SE) · frambuesa y zarzamora comparten la fracción 0810.20 · el tomate verde no tiene fracción propia · 2026 con datos a julio",
+                    "textStyle": {
+                      "fontSize": "11pt",
+                      "color": "#F5DDE3"
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "visualContainerObjects": {
+      "background": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "drillFilterOtherVisuals": true
+  }
+}

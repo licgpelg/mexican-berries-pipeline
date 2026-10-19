@@ -1,0 +1,29 @@
+table dim_modalidad
+	lineageTag: dfa4e539-ef5a-498a-9d34-67fb849b9c75
+
+	column id_modalidad
+		dataType: int64
+		isHidden
+		lineageTag: c092fa0e-bdc5-4697-972a-5d5178d491fb
+		summarizeBy: none
+		sourceColumn: id_modalidad
+
+	column modalidad
+		dataType: string
+		lineageTag: 1b79c68c-c216-490f-b45a-b32fa20686ca
+		summarizeBy: none
+		sourceColumn: modalidad
+		sortByColumn: id_modalidad
+
+	partition dim_modalidad = m
+		mode: import
+		source =
+				let
+				    Origen = Csv.Document(File.Contents(RutaDatos & "dim_modalidad.csv"), [Delimiter = ",", Encoding = 65001, QuoteStyle = QuoteStyle.Csv]),
+				    Encabezados = Table.PromoteHeaders(Origen, [PromoteAllScalars = true]),
+				    Tipos = Table.TransformColumnTypes(Encabezados, {{"id_modalidad", Int64.Type}, {"modalidad", type text}}, "en-US")
+				in
+				    Tipos
+
+	annotation PBI_ResultType = Table
+

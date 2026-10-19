@@ -1,0 +1,492 @@
+/// SIAP, Cierre de la producción agrícola: municipio × cultivo × ciclo × modalidad × año, desde 2003. Solo toneladas (se excluye la planta de vivero de fresa). 2020 y 2021 no traen arándano en el CSV abierto.
+table fact_produccion
+	lineageTag: e2fdc719-ca6e-4ac5-b89c-b7e0aa721280
+
+	/// Toneladas cosechadas, SIAP.
+	measure 'Producción (t)' = SUM ( fact_produccion[produccion_t] )
+		formatString: #,0
+		displayFolder: Producción
+		lineageTag: f285d388-1188-4d6c-9a0d-320e21ee9f3e
+
+	measure 'Superficie cosechada (ha)' = SUM ( fact_produccion[superficie_cosechada_ha] )
+		formatString: #,0
+		displayFolder: Producción
+		lineageTag: af901d37-2d27-4bec-a619-b99d0581d333
+
+	measure 'Superficie sembrada (ha)' = SUM ( fact_produccion[superficie_sembrada_ha] )
+		formatString: #,0
+		displayFolder: Producción
+		lineageTag: f81d4167-89cb-4d78-b9d6-60abf1ed316b
+
+	/// Pesos corrientes del año, a precio medio rural.
+	measure 'Valor de la producción (MXN)' = SUM ( fact_produccion[valor_produccion_mxn] )
+		formatString: \$#,0
+		displayFolder: Producción
+		lineageTag: da5a39a8-1da8-40e4-bfaf-538fb19aaa7d
+
+	/// Producción entre superficie cosechada del contexto; no es un promedio de rendimientos municipales.
+	measure 'Rendimiento (t/ha)' = DIVIDE ( [Producción (t)], [Superficie cosechada (ha)] )
+		formatString: #,0.00
+		displayFolder: Producción
+		lineageTag: 706c425f-aa80-4eca-8ec6-7549914af472
+
+	/// Ponderado por volumen: valor entre producción.
+	measure 'Precio medio rural (MXN/t)' = DIVIDE ( [Valor de la producción (MXN)], [Producción (t)] )
+		formatString: \$#,0
+		displayFolder: Producción
+		lineageTag: 4519fe33-4adc-4418-9511-9373d5b7654e
+
+	measure 'Producción año anterior (t)' = CALCULATE ( [Producción (t)], DATEADD ( dim_fecha[fecha], -1, YEAR ) )
+		formatString: #,0
+		displayFolder: Producción
+		lineageTag: f9843f79-e46a-40e2-a665-6e92dc1a496e
+
+	measure 'Var. producción %' =
+			VAR actual = [Producción (t)]
+			VAR anterior = [Producción año anterior (t)]
+			RETURN
+				DIVIDE ( actual - anterior, anterior )
+		formatString: 0.0%
+		displayFolder: Producción
+		lineageTag: b3dbe919-0158-414d-b586-e4b6f38acc7a
+
+	measure 'Valor año anterior (MXN)' = CALCULATE ( [Valor de la producción (MXN)], DATEADD ( dim_fecha[fecha], -1, YEAR ) )
+		formatString: \$#,0
+		displayFolder: Producción
+		lineageTag: da6a812b-a7a8-498a-8059-0e166d18ebff
+
+	measure 'Var. valor %' =
+			VAR actual = [Valor de la producción (MXN)]
+			VAR anterior = [Valor año anterior (MXN)]
+			RETURN
+				DIVIDE ( actual - anterior, anterior )
+		formatString: 0.0%
+		displayFolder: Producción
+		lineageTag: 0928f244-703f-480f-89cb-adad6a2b29c1
+
+	/// Producción del estado o municipio entre la nacional del mismo cultivo y año.
+	measure 'Participación del estado %' = DIVIDE ( [Producción (t)], CALCULATE ( [Producción (t)], REMOVEFILTERS ( dim_municipio ) ) )
+		formatString: 0.0%
+		displayFolder: Producción
+		lineageTag: 3fa0b02f-053a-4e1a-b9aa-d0921b63d2fd
+
+	/// Último año con cierre del SIAP.
+	measure 'Producción: último año' = CALCULATE ( MAX ( fact_produccion[anio] ), REMOVEFILTERS () )
+		formatString: 0
+		displayFolder: Producción
+		lineageTag: f7e1c5ca-e604-4b26-85f8-4044ee1fe48e
+
+	/// Lo que deja una hectárea cosechada a precio medio rural: compara cultivos de escala muy distinta.
+	measure 'Valor por hectárea (MXN/ha)' = DIVIDE ( [Valor de la producción (MXN)], [Superficie cosechada (ha)] )
+		formatString: \$#,0
+		displayFolder: Producción
+		lineageTag: 1968fc90-9694-4cb5-8c5d-140aedb97ab7
+
+	/// Los cultivos del contexto en texto, para los títulos: «fresa», «berries» si están todas las de un grupo, «los ocho cultivos» sin filtro, o la lista «fresa, arándano y maíz grano».
+	measure 'Título: selección' =
+			VAR n = COUNTROWS ( VALUES ( dim_cultivo[id_cultivo] ) )
+			VAR total = COUNTROWS ( ALL ( dim_cultivo ) )
+			VAR grupo = SELECTEDVALUE ( dim_cultivo[grupo] )
+			VAR n_grupo = CALCULATE ( COUNTROWS ( dim_cultivo ), REMOVEFILTERS ( dim_cultivo ), dim_cultivo[grupo] = grupo )
+			VAR t =
+			    ADDCOLUMNS (
+			        VALUES ( dim_cultivo[id_cultivo] ),
+			        "@pos", RANKX ( VALUES ( dim_cultivo[id_cultivo] ), dim_cultivo[id_cultivo], , ASC ),
+			        "@nom", LOWER ( CALCULATE ( VALUES ( dim_cultivo[cultivo] ) ) )
+			    )
+			VAR lista = CONCATENATEX ( t, IF ( [@pos] = 1, "", IF ( [@pos] = n, " y ", ", " ) ) & [@nom], "", [@pos], ASC )
+			RETURN
+			    SWITCH (
+			        TRUE (),
+			        n = 0, BLANK (),
+			        n = total, "los ocho cultivos",
+			        n = 1, LOWER ( SELECTEDVALUE ( dim_cultivo[cultivo] ) ),
+			        NOT ISBLANK ( grupo ) && n = n_grupo, LOWER ( grupo ),
+			        lista
+			    )
+		displayFolder: Títulos
+		lineageTag: a83f6450-1d0a-4c29-a38e-17829653c23d
+
+	/// Los cultivos que cubren las fracciones seleccionadas: con frambuesa sola dice «frambuesa y zarzamora», porque 0810.20 trae las dos. Vacío si ningún cultivo seleccionado tiene fracción (el tomate verde).
+	measure 'Título: selección en comercio' =
+			VAR fracciones = FILTER ( VALUES ( dim_cultivo[hs6] ), dim_cultivo[hs6] <> "" )
+			RETURN
+			    IF (
+			        NOT ISEMPTY ( fracciones ),
+			        CALCULATE ( [Título: selección], REMOVEFILTERS ( dim_cultivo ), TREATAS ( fracciones, dim_cultivo[hs6] ) )
+			    )
+		displayFolder: Títulos
+		lineageTag: beb5fcdd-192c-43c4-9c24-113b04cf80c0
+
+	measure 'Título resumen' =
+			VAR sel = [Título: selección]
+			VAR anio = [Producción: último año]
+			VAR anio_com = YEAR ( EDATE ( [Comercio: último mes], 1 ) ) - 1
+			VAR valor = CALCULATE ( [Valor de la producción (MXN)], REMOVEFILTERS ( dim_fecha ), dim_fecha[anio] = anio )
+			VAR exp = CALCULATE ( [Exportaciones (USD)], REMOVEFILTERS ( dim_fecha ), dim_fecha[anio] = anio_com )
+			VAR txt_valor =
+			    IF ( valor >= 1E10, FORMAT ( valor / 1E9, "#,0" ) & " mil millones de pesos",
+			        IF ( valor >= 1E6, FORMAT ( valor / 1E6, "#,0" ) & " millones de pesos", FORMAT ( valor, "#,0" ) & " pesos" ) )
+			VAR txt_exp =
+			    SWITCH ( TRUE (),
+			        [Título: selección en comercio] = "", "sin fracción arancelaria propia para medir sus exportaciones",
+			        exp >= 1E10, FORMAT ( exp / 1E9, "#,0" ) & " mil millones de dólares exportados",
+			        exp >= 1E6, FORMAT ( exp / 1E6, "#,0" ) & " millones de dólares exportados",
+			        FORMAT ( exp, "#,0" ) & " dólares exportados" )
+			RETURN
+			    IF ( NOT ISBLANK ( sel ),
+			        UPPER ( LEFT ( sel, 1 ) ) & MID ( sel, 2, 500 ) & " en México, " & anio & ": " & txt_valor & " de producción y " & txt_exp )
+		displayFolder: Títulos
+		lineageTag: c89834c7-9e81-4655-89fd-b3de976269fc
+
+	measure 'Título producción' =
+			VAR sel = [Título: selección]
+			VAR anio = [Producción: último año]
+			VAR estados =
+			    CALCULATETABLE (
+			        ADDCOLUMNS ( VALUES ( dim_municipio[estado] ), "@t", [Producción (t)] ),
+			        REMOVEFILTERS ( dim_fecha ), dim_fecha[anio] = anio
+			    )
+			VAR primero = TOPN ( 1, estados, [@t], DESC )
+			VAR estado = MAXX ( primero, dim_municipio[estado] )
+			VAR part = DIVIDE ( MAXX ( primero, [@t] ), SUMX ( estados, [@t] ) )
+			VAR anio_base = MINX ( FILTER ( ALL ( dim_fecha[anio] ), [Producción (t)] > 0 ), dim_fecha[anio] )
+			VAR actual = CALCULATE ( [Producción (t)], REMOVEFILTERS ( dim_fecha ), dim_fecha[anio] = anio )
+			VAR base = CALCULATE ( [Producción (t)], REMOVEFILTERS ( dim_fecha ), dim_fecha[anio] = anio_base )
+			VAR r = DIVIDE ( actual, base )
+			-- Con bases casi nulas (arándano 2003: 295 t) un cociente de cientos de veces no dice nada: se dan las dos cifras.
+			VAR crec =
+			    SWITCH ( TRUE (),
+			        r >= 20, "pasó de " & FORMAT ( base, "#,0" ) & " t en " & anio_base & " a " & FORMAT ( actual, "#,0" ) & " t",
+			        r >= 2, "cosecha " & FORMAT ( r, "0.0" ) & " veces lo de " & anio_base,
+			        r >= 1, "cosecha un " & FORMAT ( ( r - 1 ) * 100, "0" ) & " % más que en " & anio_base,
+			        "cosecha un " & FORMAT ( ( 1 - r ) * 100, "0" ) & " % menos que en " & anio_base
+			    )
+			RETURN
+			    IF ( NOT ISBLANK ( estado ),
+			        estado & " concentra el " & FORMAT ( part * 100, "0" ) & " % de la producción de " & sel
+			            & "; el país " & crec )
+		displayFolder: Títulos
+		lineageTag: 0323d383-90de-4ceb-b5df-d05b64f4e70c
+
+	measure 'Título exportación' =
+			VAR sel = [Título: selección en comercio]
+			VAR anio = YEAR ( EDATE ( [Comercio: último mes], 1 ) ) - 1
+			VAR exp = CALCULATE ( [Exportaciones (USD)], REMOVEFILTERS ( dim_fecha ), dim_fecha[anio] = anio )
+			VAR bal = CALCULATE ( [Balanza comercial (USD)], REMOVEFILTERS ( dim_fecha ), dim_fecha[anio] = anio )
+			VAR eua = CALCULATE ( [Exportaciones a EE. UU. %], REMOVEFILTERS ( dim_fecha ), dim_fecha[anio] = anio )
+			VAR anio_base = MINX ( FILTER ( ALL ( dim_fecha[anio] ), [Exportaciones (USD)] > 0 ), dim_fecha[anio] )
+			VAR base = CALCULATE ( [Exportaciones (USD)], REMOVEFILTERS ( dim_fecha ), dim_fecha[anio] = anio_base )
+			VAR r = DIVIDE ( exp, base )
+			VAR txt_base = IF ( base >= 1E6, FORMAT ( base / 1E6, "#,0" ) & " millones de dólares", FORMAT ( base / 1E3, "#,0" ) & " mil dólares" )
+			-- Con bases casi nulas (arándano 2006: 32 mil USD) un cociente de miles de veces no dice nada: se dan las dos cifras.
+			VAR crec =
+			    SWITCH ( TRUE (),
+			        r >= 20, "pasaron de " & txt_base & " en " & anio_base & " a " & FORMAT ( exp / 1E6, "#,0" ) & " millones en " & anio,
+			        r >= 2, "crecieron " & FORMAT ( r, "0.0" ) & " veces desde " & anio_base,
+			        r >= 1, "crecieron un " & FORMAT ( ( r - 1 ) * 100, "0" ) & " % desde " & anio_base,
+			        "cayeron un " & FORMAT ( ( 1 - r ) * 100, "0" ) & " % desde " & anio_base
+			    )
+			VAR txt_eua = FORMAT ( eua * 100, IF ( eua >= 0.995, "0.0", "0" ) )
+			VAR deficit =
+			    IF ( -bal >= 1E10, FORMAT ( -bal / 1E9, "#,0" ) & " mil millones", FORMAT ( -bal / 1E6, "#,0" ) & " millones" )
+			RETURN
+			    SWITCH ( TRUE (),
+			        sel = "", "Sin fracción arancelaria propia para " & [Título: selección] & ": DataMéxico no publica su comercio exterior",
+			        bal < 0, "México importa más de lo que exporta en " & sel & ": en " & anio & " el saldo fue de −" & deficit & " de dólares",
+			        "Las exportaciones de " & sel & " " & crec & " y el " & txt_eua & " % va a EE. UU."
+			    )
+		displayFolder: Títulos
+		lineageTag: 41eb9525-3daf-4404-9cf7-141728e30f40
+
+	measure 'Título mundo' =
+			VAR anio = [Mundo: último año]
+			VAR t =
+			    FILTER (
+			        ADDCOLUMNS (
+			            VALUES ( dim_cultivo[id_cultivo] ),
+			            "@lugar", CALCULATE ( [Lugar de México], REMOVEFILTERS ( dim_fecha ), dim_fecha[anio] = anio ),
+			            "@nom", LOWER ( CALCULATE ( VALUES ( dim_cultivo[cultivo] ) ) )
+			        ),
+			        NOT ISBLANK ( [@lugar] )
+			    )
+			VAR n = COUNTROWS ( t )
+			VAR t2 = ADDCOLUMNS ( t, "@pos", RANKX ( t, [@lugar] * 100 + dim_cultivo[id_cultivo], , ASC ) )
+			VAR lista =
+			    CONCATENATEX (
+			        t2,
+			        IF ( [@pos] = 1, "", IF ( [@pos] = n, " y ", ", " ) )
+			            & "el " & [@lugar] & ".º " & IF ( [@pos] = 1, "productor mundial ", "" ) & "de " & [@nom],
+			        "", [@pos], ASC
+			    )
+			RETURN
+			    IF ( n = 0,
+			        "La FAO no publica " & [Título: selección] & " por separado",
+			        "México es " & lista )
+		displayFolder: Títulos
+		lineageTag: d921342c-71f6-42dc-b247-0b90a9b201f7
+
+	/// Sin filtro de cultivo compara las berries; el maíz (grupo Granos) es siempre la referencia.
+	measure 'Título contraste' =
+			VAR anio = [Producción: último año]
+			VAR todos = COUNTROWS ( VALUES ( dim_cultivo[id_cultivo] ) ) = COUNTROWS ( ALL ( dim_cultivo ) )
+			VAR sel = IF ( todos, "berries", [Título: selección] )
+			VAR vxha =
+			    IF ( todos,
+			        CALCULATE ( [Valor por hectárea (MXN/ha)], REMOVEFILTERS ( dim_fecha ), dim_fecha[anio] = anio, dim_cultivo[grupo] = "Berries" ),
+			        CALCULATE ( [Valor por hectárea (MXN/ha)], REMOVEFILTERS ( dim_fecha ), dim_fecha[anio] = anio ) )
+			VAR maiz = CALCULATE ( [Valor por hectárea (MXN/ha)], REMOVEFILTERS ( dim_fecha ), dim_fecha[anio] = anio, REMOVEFILTERS ( dim_cultivo ), dim_cultivo[grupo] = "Granos" )
+			VAR r = DIVIDE ( vxha, maiz )
+			RETURN
+			    IF ( sel = "maíz grano",
+			        "Una hectárea de maíz grano dejó " & FORMAT ( maiz, "$#,0" ) & " en " & anio & ", a precio medio rural",
+			        "Una hectárea de " & sel & " vale " & FORMAT ( r, "0.0" ) & " veces lo que una de maíz" )
+		displayFolder: Títulos
+		lineageTag: 53d71404-d338-4f73-a796-b39a79a11bbf
+
+	/// Posición del estado entre los 32 por producción, con los mismos filtros de cultivo y año. Compara con REMOVEFILTERS(dim_municipio) y no con ALL(estado): el mapa y el tooltip filtran el estado y se quedaría solo contra sí mismo. Excluye al propio estado por nombre: sumado por otro camino, su total difiere en los decimales y contaba como mayor que sí mismo (Sinaloa salía 4.º en vez de 3.º, 2026-10-13).
+	measure 'Lugar del estado' =
+			VAR yo = SELECTEDVALUE ( dim_municipio[estado] )
+			VAR t = [Producción (t)]
+			VAR estados = CALCULATETABLE ( VALUES ( dim_municipio[estado] ), REMOVEFILTERS ( dim_municipio ) )
+			VAR por_encima =
+			    COUNTROWS (
+			        FILTER (
+			            estados,
+			            VAR e = dim_municipio[estado]
+			            RETURN e <> yo && CALCULATE ( [Producción (t)], REMOVEFILTERS ( dim_municipio ), dim_municipio[estado] = e ) > t
+			        )
+			    )
+			RETURN
+			    IF ( NOT ISBLANK ( yo ) && t > 0, por_encima + 1 )
+		formatString: 0
+		displayFolder: Estados
+		lineageTag: d7fa68fd-eb66-467f-92d7-4b2483e5c1ef
+
+	/// El municipio que más produce en el contexto, con su parte de la producción.
+	measure 'Municipio principal' =
+			VAR t = [Producción (t)]
+			VAR primero = TOPN ( 1, ADDCOLUMNS ( VALUES ( dim_municipio[municipio] ), "@t", [Producción (t)] ), [@t], DESC )
+			RETURN
+			    IF ( t > 0,
+			        MAXX ( primero, dim_municipio[municipio] ) & " (" & FORMAT ( DIVIDE ( MAXX ( primero, [@t] ), t ) * 100, "0" ) & " %)" )
+		displayFolder: Estados
+		lineageTag: ddaa7b23-d8d1-4892-84c9-82791f6ac269
+
+	measure 'Estado: nombre' = SELECTEDVALUE ( dim_municipio[estado], "Varios estados" )
+		displayFolder: Estados
+		lineageTag: c7a90175-f8cd-4feb-b807-307b7375f46a
+
+	/// Como Lugar del estado, por valor de la producción.
+	measure 'Lugar del estado por valor' =
+			VAR yo = SELECTEDVALUE ( dim_municipio[estado] )
+			VAR v = [Valor de la producción (MXN)]
+			VAR estados = CALCULATETABLE ( VALUES ( dim_municipio[estado] ), REMOVEFILTERS ( dim_municipio ) )
+			VAR por_encima =
+			    COUNTROWS (
+			        FILTER (
+			            estados,
+			            VAR e = dim_municipio[estado]
+			            RETURN e <> yo && CALCULATE ( [Valor de la producción (MXN)], REMOVEFILTERS ( dim_municipio ), dim_municipio[estado] = e ) > v
+			        )
+			    )
+			RETURN
+			    IF ( NOT ISBLANK ( yo ) && v > 0, por_encima + 1 )
+		formatString: 0
+		displayFolder: Estados
+		lineageTag: bef9d86e-5dc4-4514-9e50-a8a3fb506d04
+
+	/// Los cultivos en que el estado está entre los cinco primeros del país, agrupados por lugar: «Sinaloa es 1.º productor nacional de tomate rojo y tomate verde, y 2.º de arándano, papa y maíz grano».
+	measure 'Título estado' =
+			VAR estado = [Estado: nombre]
+			VAR anio = [Producción: último año]
+			VAR t =
+			    FILTER (
+			        ADDCOLUMNS (
+			            VALUES ( dim_cultivo[id_cultivo] ),
+			            "@lugar", CALCULATE ( [Lugar del estado], REMOVEFILTERS ( dim_fecha ), dim_fecha[anio] = anio ),
+			            "@nom", LOWER ( CALCULATE ( VALUES ( dim_cultivo[cultivo] ) ) )
+			        ),
+			        NOT ISBLANK ( [@lugar] ) && [@lugar] <= 5
+			    )
+			VAR lugares = DISTINCT ( SELECTCOLUMNS ( t, "@l", [@lugar] ) )
+			VAR nl = COUNTROWS ( lugares )
+			VAR texto =
+			    CONCATENATEX (
+			        lugares,
+			        VAR l = [@l]
+			        VAR pos = RANKX ( lugares, [@l], , ASC )
+			        VAR cultivos = FILTER ( t, [@lugar] = l )
+			        VAR n = COUNTROWS ( cultivos )
+			        VAR lista =
+			            CONCATENATEX (
+			                ADDCOLUMNS ( cultivos, "@p", RANKX ( cultivos, dim_cultivo[id_cultivo], , ASC ) ),
+			                IF ( [@p] = 1, "", IF ( [@p] = n, " y ", ", " ) ) & [@nom],
+			                "", [@p], ASC
+			            )
+			        RETURN
+			            IF ( pos = 1, "", IF ( pos = nl, IF ( nl = 2, " y ", ", y " ), ", " ) ) & l & ".º "
+			                & IF ( pos = 1, "productor nacional de ", "de " ) & lista,
+			        "", [@l], ASC
+			    )
+			VAR mayor =
+			    TOPN ( 1, ADDCOLUMNS ( VALUES ( dim_cultivo[cultivo] ), "@v", CALCULATE ( [Valor de la producción (MXN)], REMOVEFILTERS ( dim_fecha ), dim_fecha[anio] = anio ) ), [@v], DESC )
+			RETURN
+			    SWITCH ( TRUE (),
+			        nl > 0, estado & " es " & texto,
+			        MAXX ( mayor, [@v] ) > 0, estado & ": su cultivo de mayor valor es " & LOWER ( MAXX ( mayor, dim_cultivo[cultivo] ) )
+			    )
+		displayFolder: Títulos
+		lineageTag: 4740807d-ae1b-42c2-8f15-db094114e3f4
+
+	/// Lugar por valor y comparación con el mejor año del estado, en pesos corrientes.
+	measure 'Título estado: valor' =
+			VAR anio = [Producción: último año]
+			VAR valor = CALCULATE ( [Valor de la producción (MXN)], REMOVEFILTERS ( dim_fecha ), dim_fecha[anio] = anio )
+			VAR lugar = CALCULATE ( [Lugar del estado por valor], REMOVEFILTERS ( dim_fecha ), dim_fecha[anio] = anio )
+			VAR anios = ADDCOLUMNS ( ALL ( dim_fecha[anio] ), "@v", CALCULATE ( [Valor de la producción (MXN)] ) )
+			VAR mejor = TOPN ( 1, anios, [@v], DESC )
+			VAR anio_max = MAXX ( mejor, dim_fecha[anio] )
+			VAR v_max = MAXX ( mejor, [@v] )
+			VAR caida = 1 - DIVIDE ( valor, v_max )
+			RETURN
+			    IF ( valor > 0,
+			        lugar & ".º estado por valor de estos cultivos: " & FORMAT ( valor / 1E6, "#,0" ) & " millones de pesos en " & anio
+			            & IF ( anio_max <> anio && caida >= 0.2,
+			                ", un " & FORMAT ( caida * 100, "0" ) & " % menos que en " & anio_max & " (" & FORMAT ( v_max / 1E6, "#,0" ) & " millones)" ) )
+		displayFolder: Títulos
+		lineageTag: f95ecf7d-8462-491e-9932-00d1862b9373
+
+	/// Color hex del estado en el mapa: de crema (#F6E7EA) a baya (#5C0F25) según su producción entre la del estado que más produce. Escala de raíz cuadrada: en berries Michoacán produce 25 veces lo de Sinaloa y en lineal todo lo demás saldría casi blanco.
+	measure 'Color del mapa' =
+			VAR t = [Producción (t)]
+			VAR maximo =
+			    MAXX (
+			        CALCULATETABLE ( VALUES ( dim_municipio[estado] ), REMOVEFILTERS ( dim_municipio ) ),
+			        VAR e = dim_municipio[estado]
+			        RETURN CALCULATE ( [Producción (t)], REMOVEFILTERS ( dim_municipio ), dim_municipio[estado] = e )
+			    )
+			VAR k = MIN ( 1, SQRT ( DIVIDE ( t, maximo ) ) )
+			VAR rojo = INT ( 246 + ( 92 - 246 ) * k )
+			VAR verde = INT ( 231 + ( 15 - 231 ) * k )
+			VAR azul = INT ( 234 + ( 37 - 234 ) * k )
+			VAR hex = "0123456789ABCDEF"
+			RETURN
+			    IF ( t > 0,
+			        "#" & MID ( hex, QUOTIENT ( rojo, 16 ) + 1, 1 ) & MID ( hex, MOD ( rojo, 16 ) + 1, 1 )
+			            & MID ( hex, QUOTIENT ( verde, 16 ) + 1, 1 ) & MID ( hex, MOD ( verde, 16 ) + 1, 1 )
+			            & MID ( hex, QUOTIENT ( azul, 16 ) + 1, 1 ) & MID ( hex, MOD ( azul, 16 ) + 1, 1 ) )
+		displayFolder: Estados
+		lineageTag: 3b287ed8-3790-44c5-be55-fe7daa8a5813
+
+	column anio
+		dataType: int64
+		isHidden
+		lineageTag: 65d9ab3b-7a51-4961-b9c2-408cef7a329b
+		summarizeBy: none
+		sourceColumn: anio
+
+	column fecha
+		dataType: dateTime
+		isHidden
+		lineageTag: 8eeaa60e-ca9a-4f31-9225-252b7b8f5a11
+		summarizeBy: none
+		sourceColumn: fecha
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column cve_mun
+		dataType: string
+		isHidden
+		lineageTag: 352b9026-55dd-40a5-aade-c7eda2c951d2
+		summarizeBy: none
+		sourceColumn: cve_mun
+
+	column id_estado
+		dataType: int64
+		isHidden
+		lineageTag: 028e4e06-cdb7-41ab-80ad-7cad3e29988d
+		summarizeBy: none
+		sourceColumn: id_estado
+
+	column id_cultivo
+		dataType: int64
+		isHidden
+		lineageTag: d07d82eb-0175-4060-8e04-c841a7fa589a
+		summarizeBy: none
+		sourceColumn: id_cultivo
+
+	column id_ciclo
+		dataType: int64
+		isHidden
+		lineageTag: 31316dc5-ac31-46bf-8ccd-07805dfb5d68
+		summarizeBy: none
+		sourceColumn: id_ciclo
+
+	column id_modalidad
+		dataType: int64
+		isHidden
+		lineageTag: f8cf83db-c230-4826-bf49-5db6219d90e4
+		summarizeBy: none
+		sourceColumn: id_modalidad
+
+	column superficie_sembrada_ha
+		dataType: double
+		isHidden
+		formatString: #,0.00
+		lineageTag: 7cf324eb-1b7c-4f84-a569-d0505101fcaa
+		summarizeBy: sum
+		sourceColumn: superficie_sembrada_ha
+
+	column superficie_cosechada_ha
+		dataType: double
+		isHidden
+		formatString: #,0.00
+		lineageTag: 842659b4-21fd-43c0-b6ec-fc4e988e70f9
+		summarizeBy: sum
+		sourceColumn: superficie_cosechada_ha
+
+	column superficie_siniestrada_ha
+		dataType: double
+		isHidden
+		formatString: #,0.00
+		lineageTag: 1ce13b90-0047-438c-bdb7-6475e1c88867
+		summarizeBy: sum
+		sourceColumn: superficie_siniestrada_ha
+
+	column produccion_t
+		dataType: double
+		isHidden
+		formatString: #,0.00
+		lineageTag: f781f554-f237-4900-9516-2c61685aae73
+		summarizeBy: sum
+		sourceColumn: produccion_t
+
+	column precio_medio_rural_mxn
+		dataType: double
+		isHidden
+		formatString: #,0.00
+		lineageTag: 3956f06d-364c-4941-b472-6e5064de3698
+		summarizeBy: none
+		sourceColumn: precio_medio_rural_mxn
+
+	column valor_produccion_mxn
+		dataType: double
+		isHidden
+		formatString: #,0.00
+		lineageTag: f0fbeb76-97b9-4422-a15c-372f67e97181
+		summarizeBy: sum
+		sourceColumn: valor_produccion_mxn
+
+	partition fact_produccion = m
+		mode: import
+		source =
+				let
+				    Origen = Csv.Document(File.Contents(RutaDatos & "fact_produccion.csv"), [Delimiter = ",", Encoding = 65001, QuoteStyle = QuoteStyle.Csv]),
+				    Encabezados = Table.PromoteHeaders(Origen, [PromoteAllScalars = true]),
+				    Tipos = Table.TransformColumnTypes(Encabezados, {{"anio", Int64.Type}, {"fecha", type date}, {"cve_mun", type text}, {"id_estado", Int64.Type}, {"id_cultivo", Int64.Type}, {"id_ciclo", Int64.Type}, {"id_modalidad", Int64.Type}, {"superficie_sembrada_ha", type number}, {"superficie_cosechada_ha", type number}, {"superficie_siniestrada_ha", type number}, {"produccion_t", type number}, {"precio_medio_rural_mxn", type number}, {"valor_produccion_mxn", type number}}, "en-US")
+				in
+				    Tipos
+
+	annotation PBI_ResultType = Table
+

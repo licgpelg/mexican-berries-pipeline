@@ -1,0 +1,48 @@
+relationship 5a31b77a-d866-44ed-89c9-b478f94e11ae
+	fromColumn: fact_produccion.fecha
+	toColumn: dim_fecha.fecha
+
+relationship 0b23e077-7b45-4d17-a294-3199021e53ff
+	fromColumn: fact_produccion.id_cultivo
+	toColumn: dim_cultivo.id_cultivo
+
+relationship a61bffac-e077-4e69-8f34-e36bf980c7be
+	fromColumn: fact_produccion.cve_mun
+	toColumn: dim_municipio.cve_mun
+
+relationship 9f95129d-d6bb-4b32-a200-8b062ca8e607
+	fromColumn: fact_produccion.id_ciclo
+	toColumn: dim_ciclo.id_ciclo
+
+relationship 194011e0-632e-42b1-a5b7-f0b46b4af70e
+	fromColumn: fact_produccion.id_modalidad
+	toColumn: dim_modalidad.id_modalidad
+
+relationship 26cc92bc-1895-40b4-821f-ffc2069cba65
+	fromColumn: fact_produccion_mundial.fecha
+	toColumn: dim_fecha.fecha
+
+relationship 1da8742e-df3e-41f7-8f19-87e4838661ea
+	fromColumn: fact_produccion_mundial.id_cultivo
+	toColumn: dim_cultivo.id_cultivo
+
+relationship 1c070400-9ced-4469-a35c-86812b02b6e7
+	fromColumn: fact_produccion_mundial.m49
+	toColumn: dim_pais.m49
+
+relationship 2d474d50-e603-42ac-8c66-ba9c8b09ec3f
+	fromColumn: fact_comercio.mes
+	toColumn: dim_fecha.fecha
+
+relationship 27e2e994-a8cd-4bfb-a0da-002b7244745e
+	fromColumn: fact_comercio.hs6
+	toColumn: dim_hs6.hs6
+
+relationship a26820ec-7da2-4166-bd5f-e264da93a7d4
+	fromColumn: fact_comercio.id_flujo
+	toColumn: dim_flujo.id_flujo
+
+relationship aeb9851a-3470-4750-8033-c3a3e4c53a61
+	fromColumn: fact_comercio.id_pais_iso3
+	toColumn: dim_pais_comercio.id_pais_iso3
+

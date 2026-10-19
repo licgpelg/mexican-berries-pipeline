@@ -1,0 +1,11 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/gitIntegration/platformProperties/2.0.0/schema.json",
+  "metadata": {
+    "type": "SemanticModel",
+    "displayName": "Berries"
+  },
+  "config": {
+    "version": "2.0",
+    "logicalId": "ded53be7-44c8-4af3-a422-f6388846cfc1"
+  }
+}

@@ -1,0 +1,30 @@
+model Model
+	culture: es-MX
+	defaultPowerBIDataSourceVersion: powerBI_V3
+	sourceQueryCulture: es-MX
+	valueFilterBehavior: independent
+	dataAccessOptions
+		legacyRedirects
+		returnErrorValuesAsNull
+
+annotation __PBI_TimeIntelligenceEnabled = 0
+
+annotation PBI_QueryOrder = ["RutaDatos", "dim_fecha", "dim_cultivo", "dim_hs6", "dim_municipio", "dim_ciclo", "dim_modalidad", "dim_flujo", "dim_pais", "dim_pais_comercio", "fact_produccion", "fact_produccion_mundial", "fact_comercio"]
+
+annotation PBI_ProTooling = ["DevMode"]
+
+ref table dim_fecha
+ref table dim_cultivo
+ref table dim_hs6
+ref table dim_municipio
+ref table dim_ciclo
+ref table dim_modalidad
+ref table dim_flujo
+ref table dim_pais
+ref table dim_pais_comercio
+ref table fact_produccion
+ref table fact_produccion_mundial
+ref table fact_comercio
+
+ref cultureInfo es-MX
+

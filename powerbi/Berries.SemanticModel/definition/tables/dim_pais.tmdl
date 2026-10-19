@@ -1,0 +1,30 @@
+/// Países de FAOSTAT (código M49), sin agregados regionales.
+table dim_pais
+	lineageTag: 0e69076d-8f30-4428-9901-3dc590cf1593
+
+	column m49
+		dataType: string
+		isHidden
+		lineageTag: da38a869-0e50-49d8-8ceb-8b45195d708d
+		summarizeBy: none
+		sourceColumn: m49
+
+	column pais
+		dataType: string
+		lineageTag: 4c727fd0-f5b1-4c30-82f1-6d97bcdba65a
+		dataCategory: Country
+		summarizeBy: none
+		sourceColumn: pais
+
+	partition dim_pais = m
+		mode: import
+		source =
+				let
+				    Origen = Csv.Document(File.Contents(RutaDatos & "dim_pais.csv"), [Delimiter = ",", Encoding = 65001, QuoteStyle = QuoteStyle.Csv]),
+				    Encabezados = Table.PromoteHeaders(Origen, [PromoteAllScalars = true]),
+				    Tipos = Table.TransformColumnTypes(Encabezados, {{"m49", type text}, {"pais", type text}}, "en-US")
+				in
+				    Tipos
+
+	annotation PBI_ResultType = Table
+

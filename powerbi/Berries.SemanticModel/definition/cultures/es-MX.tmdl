@@ -1,0 +1,263 @@
+cultureInfo es-MX
+
+	linguisticMetadata =
+			{
+			  "Version": "2.0.0",
+			  "Language": "en-US",
+			  "Entities": {
+			    "dim_cultivo.cultivo": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "dim_cultivo",
+			          "ConceptualProperty": "cultivo"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Cultivo": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "dim_cultivo.grupo": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "dim_cultivo",
+			          "ConceptualProperty": "grupo"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Grupo": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "fact_produccion_mundial.lugar_de_méxico": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "fact_produccion_mundial",
+			          "ConceptualProperty": "Lugar de México"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Lugar de México": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "fact_produccion_mundial.participación_de_méxico_": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "fact_produccion_mundial",
+			          "ConceptualProperty": "Participación de México %"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "% de la producción mundial": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "fact_produccion_mundial.producción_mundial_t": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "fact_produccion_mundial",
+			          "ConceptualProperty": "Producción mundial (t)"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Producción mundial (t)": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "fact_produccion.producción_t": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "fact_produccion",
+			          "ConceptualProperty": "Producción (t)"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Producción (t)": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "fact_produccion.participación_del_estado_": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "fact_produccion",
+			          "ConceptualProperty": "Participación del estado %"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "% nacional": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "fact_produccion.lugar_del_estado": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "fact_produccion",
+			          "ConceptualProperty": "Lugar del estado"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Lugar nacional": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "fact_produccion.rendimiento_t_ha": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "fact_produccion",
+			          "ConceptualProperty": "Rendimiento (t/ha)"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Rendimiento (t/ha)": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "fact_produccion.valor_de_la_producción_mxn": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "fact_produccion",
+			          "ConceptualProperty": "Valor de la producción (MXN)"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Valor (MXN)": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "fact_produccion.superficie_cosechada_ha": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "fact_produccion",
+			          "ConceptualProperty": "Superficie cosechada (ha)"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Superficie cosechada (ha)": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "fact_produccion.valor_por_hectárea_mxn_ha": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "fact_produccion",
+			          "ConceptualProperty": "Valor por hectárea (MXN/ha)"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Valor por ha (MXN)": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    }
+			  }
+			}
+		contentType: json
+

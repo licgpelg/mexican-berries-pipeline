@@ -1,0 +1,50 @@
+/// Municipios con alguna berry en el SIAP. cve_mun es la clave INEGI de 5 dígitos.
+table dim_municipio
+	lineageTag: 56a14eb9-e7dc-403b-b442-8f5352b85ee9
+
+	column cve_mun
+		dataType: string
+		lineageTag: 1060362a-6152-4d48-ba23-94b287d39c7c
+		summarizeBy: none
+		sourceColumn: cve_mun
+
+	column id_estado
+		dataType: int64
+		isHidden
+		lineageTag: 7d7bd62d-ac43-4c2e-b3ce-5639023675ba
+		summarizeBy: none
+		sourceColumn: id_estado
+
+	column estado
+		dataType: string
+		lineageTag: d03da169-c0e6-4c8f-ba95-4ff5fa8aad9d
+		dataCategory: StateOrProvince
+		summarizeBy: none
+		sourceColumn: estado
+
+	column municipio
+		dataType: string
+		lineageTag: 5cfcce0a-46cc-494a-9206-ab934c30d654
+		dataCategory: County
+		summarizeBy: none
+		sourceColumn: municipio
+
+	/// Distrito de desarrollo rural (SADER)
+	column ddr
+		dataType: string
+		lineageTag: e7a6a72f-b06a-4896-b20f-6bb22388cc9b
+		summarizeBy: none
+		sourceColumn: ddr
+
+	partition dim_municipio = m
+		mode: import
+		source =
+				let
+				    Origen = Csv.Document(File.Contents(RutaDatos & "dim_municipio.csv"), [Delimiter = ",", Encoding = 65001, QuoteStyle = QuoteStyle.Csv]),
+				    Encabezados = Table.PromoteHeaders(Origen, [PromoteAllScalars = true]),
+				    Tipos = Table.TransformColumnTypes(Encabezados, {{"cve_mun", type text}, {"id_estado", Int64.Type}, {"estado", type text}, {"municipio", type text}, {"ddr", type text}}, "en-US")
+				in
+				    Tipos
+
+	annotation PBI_ResultType = Table
+

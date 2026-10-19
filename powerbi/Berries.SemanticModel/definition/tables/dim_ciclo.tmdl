@@ -1,0 +1,29 @@
+table dim_ciclo
+	lineageTag: db6a3c7e-1bfa-4846-927e-700db6d0c4f4
+
+	column id_ciclo
+		dataType: int64
+		isHidden
+		lineageTag: 0d3359cc-1526-463a-b05a-1343cf9eb5c5
+		summarizeBy: none
+		sourceColumn: id_ciclo
+
+	column ciclo
+		dataType: string
+		lineageTag: 09168331-08f9-4ce2-946c-683d2f4a4c86
+		summarizeBy: none
+		sourceColumn: ciclo
+		sortByColumn: id_ciclo
+
+	partition dim_ciclo = m
+		mode: import
+		source =
+				let
+				    Origen = Csv.Document(File.Contents(RutaDatos & "dim_ciclo.csv"), [Delimiter = ",", Encoding = 65001, QuoteStyle = QuoteStyle.Csv]),
+				    Encabezados = Table.PromoteHeaders(Origen, [PromoteAllScalars = true]),
+				    Tipos = Table.TransformColumnTypes(Encabezados, {{"id_ciclo", Int64.Type}, {"ciclo", type text}}, "en-US")
+				in
+				    Tipos
+
+	annotation PBI_ResultType = Table
+

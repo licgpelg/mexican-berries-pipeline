@@ -1,0 +1,111 @@
+/// FAOSTAT QCL: país × cultivo × año desde 1961. Sin zarzamora ni tomate verde como partida propia; «Tomatoes» de México = jitomate + tomate verde del SIAP. CC BY 4.0.
+table fact_produccion_mundial
+	lineageTag: df00d681-f182-4959-b128-4a240e0bf13d
+
+	/// Suma de países, FAOSTAT.
+	measure 'Producción mundial (t)' = SUM ( fact_produccion_mundial[produccion_t] )
+		formatString: #,0
+		displayFolder: Mundo
+		lineageTag: eb788759-e1db-4a5c-8e70-9975fab44c8c
+
+	measure 'Superficie mundial (ha)' = SUM ( fact_produccion_mundial[superficie_cosechada_ha] )
+		formatString: #,0
+		displayFolder: Mundo
+		lineageTag: ce44d3a7-a26f-4b1c-9f41-2a7b41df96db
+
+	measure 'Rendimiento FAO (t/ha)' = DIVIDE ( [Producción mundial (t)], [Superficie mundial (ha)] )
+		formatString: #,0.00
+		displayFolder: Mundo
+		lineageTag: f01badce-adfe-41fd-947e-144ba08af9e6
+
+	/// Producción de México entre la suma de países (FAO). En tomate, la cifra de México incluye el tomate verde, así que su participación sale algo inflada frente a países que solo reportan jitomate.
+	measure 'Participación de México %' =
+			DIVIDE (
+				CALCULATE ( [Producción mundial (t)], dim_pais[m49] = "484" ),
+				CALCULATE ( [Producción mundial (t)], REMOVEFILTERS ( dim_pais ) )
+			)
+		formatString: 0.0%
+		displayFolder: Mundo
+		lineageTag: d8dec3b4-c5b8-4d5c-8d90-1573e3ba66f2
+
+	/// Posición de México entre los países productores (dim_pais tiene menos de 100 filas).
+	measure 'Lugar de México' =
+			VAR mexico = CALCULATE ( [Producción mundial (t)], dim_pais[m49] = "484" )
+			VAR por_encima =
+				COUNTROWS ( FILTER ( ALL ( dim_pais ), [Producción mundial (t)] > mexico ) )
+			RETURN
+				IF ( NOT ISBLANK ( mexico ), por_encima + 1 )
+		formatString: 0
+		displayFolder: Mundo
+		lineageTag: 68b0f5dc-1f0b-437d-86b7-2ae7bb0b05db
+
+	measure 'Mundo: último año' = CALCULATE ( MAX ( fact_produccion_mundial[anio] ), REMOVEFILTERS () )
+		formatString: 0
+		displayFolder: Mundo
+		lineageTag: 6e0bbf87-7205-4866-bcaf-3c5e343f70d5
+
+	column anio
+		dataType: int64
+		isHidden
+		lineageTag: be931557-8cba-41d9-8ef7-fa45c0ca0b8a
+		summarizeBy: none
+		sourceColumn: anio
+
+	column fecha
+		dataType: dateTime
+		isHidden
+		lineageTag: f39cc612-8ddb-41bf-bcd4-9f138d93eb52
+		summarizeBy: none
+		sourceColumn: fecha
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column m49
+		dataType: string
+		isHidden
+		lineageTag: b34e1813-5ae3-4af9-81ae-b71d9522dd84
+		summarizeBy: none
+		sourceColumn: m49
+
+	column id_cultivo
+		dataType: int64
+		isHidden
+		lineageTag: c5b3f2af-cffe-4b71-a629-320f95320584
+		summarizeBy: none
+		sourceColumn: id_cultivo
+
+	column superficie_cosechada_ha
+		dataType: double
+		isHidden
+		formatString: #,0.00
+		lineageTag: 87a420b1-bfd9-4bb2-a8fe-3aad9e6b4f78
+		summarizeBy: sum
+		sourceColumn: superficie_cosechada_ha
+
+	column produccion_t
+		dataType: double
+		isHidden
+		formatString: #,0.00
+		lineageTag: 7511886b-bd3d-49b9-9f44-520b9eca0ab6
+		summarizeBy: sum
+		sourceColumn: produccion_t
+
+	/// A oficial · E estimada · I imputada · M faltante · X de otro organismo
+	column marca_produccion
+		dataType: string
+		lineageTag: 58c3fb75-fc9f-440e-93ae-239bfd66c61f
+		summarizeBy: none
+		sourceColumn: marca_produccion
+
+	partition fact_produccion_mundial = m
+		mode: import
+		source =
+				let
+				    Origen = Csv.Document(File.Contents(RutaDatos & "fact_produccion_mundial.csv"), [Delimiter = ",", Encoding = 65001, QuoteStyle = QuoteStyle.Csv]),
+				    Encabezados = Table.PromoteHeaders(Origen, [PromoteAllScalars = true]),
+				    Tipos = Table.TransformColumnTypes(Encabezados, {{"anio", Int64.Type}, {"fecha", type date}, {"m49", type text}, {"id_cultivo", Int64.Type}, {"superficie_cosechada_ha", type number}, {"produccion_t", type number}, {"marca_produccion", type text}}, "en-US")
+				in
+				    Tipos
+
+	annotation PBI_ResultType = Table
+

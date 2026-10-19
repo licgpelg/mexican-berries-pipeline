@@ -1,0 +1,7 @@
+/// Carpeta de los CSV de data/gold, terminada en barra invertida. Al clonar el repo,
+/// cámbiala en Transformar datos → Editar parámetros.
+expression RutaDatos = "C:\Proyectos\Berries_portafolio\data\gold\" meta [IsParameterQuery = true, Type = "Text", IsParameterQueryRequired = true]
+	lineageTag: 54a3db48-f54e-415f-a32f-8a711929e242
+
+	annotation PBI_ResultType = Text
+

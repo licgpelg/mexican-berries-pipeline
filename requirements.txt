@@ -1,0 +1,4 @@
+# Versiones con las que corrió run_all.py en verde (2026-10-13).
+pandas==3.0.3
+requests==2.34.2
+urllib3==2.7.0

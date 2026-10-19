@@ -1,0 +1,71 @@
+/// Cultivos del tablero: las cuatro berries más papa, tomate rojo, tomate verde y maíz grano como referencia. hs6 y grupo_comercio solo documentan la conformación: el comercio filtra por dim_hs6. Para la FAO, «Tomate rojo» de México incluye el tomate verde.
+table dim_cultivo
+	lineageTag: 13e61cbd-fb0a-499c-8243-4aca7c832ea5
+
+	column id_cultivo
+		dataType: int64
+		isHidden
+		lineageTag: 57e17e69-fe73-43ed-a86c-1973ad7efeed
+		summarizeBy: none
+		sourceColumn: id_cultivo
+
+	column cultivo
+		dataType: string
+		lineageTag: ebaa0575-505f-4332-b331-770540fc42ba
+		summarizeBy: none
+		sourceColumn: cultivo
+		sortByColumn: id_cultivo
+
+	column cultivo_en
+		dataType: string
+		lineageTag: f8f179f7-6abc-40d0-a99b-2f3fdee21968
+		summarizeBy: none
+		sourceColumn: cultivo_en
+
+	column id_siap
+		dataType: int64
+		isHidden
+		lineageTag: 6918228e-c285-47f1-a038-10c58bd12e71
+		summarizeBy: none
+		sourceColumn: id_siap
+
+	column hs6
+		dataType: string
+		isHidden
+		lineageTag: e3848779-64cf-458c-a86e-ee945eb57cff
+		summarizeBy: none
+		sourceColumn: hs6
+
+	column grupo_comercio
+		dataType: string
+		isHidden
+		lineageTag: 25675b15-0029-4fd6-8f9d-b284f3436471
+		summarizeBy: none
+		sourceColumn: grupo_comercio
+
+	column item_fao
+		dataType: string
+		isHidden
+		lineageTag: baa896a6-ceb4-4127-bb91-3a0945c1a34b
+		summarizeBy: none
+		sourceColumn: item_fao
+
+	/// Berries · Hortalizas (papa, tomate rojo, tomate verde) · Granos (maíz grano).
+	column grupo
+		dataType: string
+		lineageTag: 15b8636b-c2e5-446a-a24b-d6ec227d5868
+		summarizeBy: none
+		sourceColumn: grupo
+
+	partition dim_cultivo = m
+		mode: import
+		source =
+				let
+				    Origen = Csv.Document(File.Contents(RutaDatos & "dim_cultivo.csv"), [Delimiter = ",", Encoding = 65001, QuoteStyle = QuoteStyle.Csv]),
+				    Encabezados = Table.PromoteHeaders(Origen, [PromoteAllScalars = true]),
+				    Tipos = Table.TransformColumnTypes(Encabezados, {{"id_cultivo", Int64.Type}, {"cultivo", type text}, {"cultivo_en", type text}, {"id_siap", Int64.Type}, {"hs6", type text}, {"grupo_comercio", type text}, {"item_fao", type text}, {"grupo", type text}}, "en-US")
+				in
+				    Tipos
+
+	annotation PBI_ResultType = Table
+

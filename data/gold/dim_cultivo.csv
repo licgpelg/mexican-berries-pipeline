@@ -1,0 +1,9 @@
+﻿id_cultivo,cultivo,cultivo_en,id_siap,hs6,grupo_comercio,item_fao,grupo
+1,Fresa,Strawberry,6820000,081010,Fresa,Strawberries,Berries
+2,Frambuesa,Raspberry,6810000,081020,Frambuesa y zarzamora,Raspberries,Berries
+3,Zarzamora,Blackberry,9310000,081020,Frambuesa y zarzamora,,Berries
+4,Arándano,Blueberry,5650000,081040,Arándano,Blueberries,Berries
+5,Papa,Potato,8100000,070190,Papa,Potatoes,Hortalizas
+6,Tomate rojo,Tomato,8970000,070200,Tomate,Tomatoes,Hortalizas
+7,Tomate verde,Tomatillo,8980000,,,,Hortalizas
+8,Maíz grano,Maize,7490000,100590,Maíz,Maize (corn),Granos

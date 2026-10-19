@@ -1,0 +1,25 @@
+# Credenciales
+.env
+
+# Descargas crudas: se reconstruyen con el ETL
+data/bronze/*
+!data/bronze/.gitkeep
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+.pytest_cache/
+
+# Power BI: caché local y ajustes del usuario
+powerbi/**/.pbi/localSettings.json
+powerbi/**/.pbi/cache.abf
+
+# Videos pesados del post
+linkedin/**/*.mp4
+
+# Notas de trabajo locales: no se publican
+CLAUDE.md
+AGENTS.md
+memory.md
+guia_estudio.md

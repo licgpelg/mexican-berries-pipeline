@@ -1,0 +1,36 @@
+/// Países socios del comercio exterior de México (ISO3), nombres en inglés como los da DataMéxico.
+table dim_pais_comercio
+	lineageTag: 0652e1c0-59d6-46e8-be06-a3454be0fd97
+
+	column id_pais_iso3
+		dataType: string
+		lineageTag: d6da8d70-b793-4c2a-b93b-35aa9ab36894
+		summarizeBy: none
+		sourceColumn: id_pais_iso3
+
+	column pais_en
+		dataType: string
+		lineageTag: e4d5c670-bf5c-4110-bd6c-c7661ae4715f
+		dataCategory: Country
+		summarizeBy: none
+		sourceColumn: pais_en
+
+	column continente_en
+		dataType: string
+		lineageTag: 82a875f6-87aa-4fa0-b06d-46c2df214e29
+		dataCategory: Continent
+		summarizeBy: none
+		sourceColumn: continente_en
+
+	partition dim_pais_comercio = m
+		mode: import
+		source =
+				let
+				    Origen = Csv.Document(File.Contents(RutaDatos & "dim_pais_comercio.csv"), [Delimiter = ",", Encoding = 65001, QuoteStyle = QuoteStyle.Csv]),
+				    Encabezados = Table.PromoteHeaders(Origen, [PromoteAllScalars = true]),
+				    Tipos = Table.TransformColumnTypes(Encabezados, {{"id_pais_iso3", type text}, {"pais_en", type text}, {"continente_en", type text}}, "en-US")
+				in
+				    Tipos
+
+	annotation PBI_ResultType = Table
+
