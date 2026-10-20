@@ -1,0 +1,86 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.12.0/schema.json",
+  "name": "nota",
+  "position": {
+    "x": 32,
+    "y": 518,
+    "z": 8000,
+    "height": 178,
+    "width": 300,
+    "tabOrder": 8000
+  },
+  "visual": {
+    "visualType": "textbox",
+    "objects": {
+      "general": [
+        {
+          "properties": {
+            "paragraphs": [
+              {
+                "textRuns": [
+                  {
+                    "value": "Cómo leerlo",
+                    "textStyle": {
+                      "fontSize": "11pt",
+                      "color": "#1F4D2C",
+                      "fontWeight": "bold"
+                    }
+                  }
+                ]
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": "Cifras preliminares: con el año agrícola 2025, el cierre del SIAP quedó entre 0 % y 7 % por encima del último avance.",
+                    "textStyle": {
+                      "fontSize": "9pt",
+                      "color": "#1F2421"
+                    }
+                  }
+                ]
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": "El año agrícola va de octubre a marzo del año siguiente: las cifras se acumulan desde octubre (otoño-invierno) o enero (perennes).",
+                    "textStyle": {
+                      "fontSize": "9pt",
+                      "color": "#1F2421"
+                    }
+                  }
+                ]
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": "El arándano no se publica en el avance: solo en el cierre anual.",
+                    "textStyle": {
+                      "fontSize": "9pt",
+                      "color": "#1F2421"
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "visualContainerObjects": {
+      "background": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "drillFilterOtherVisuals": true
+  }
+}

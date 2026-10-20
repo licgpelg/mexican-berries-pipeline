@@ -9,7 +9,7 @@ model Model
 
 annotation __PBI_TimeIntelligenceEnabled = 0
 
-annotation PBI_QueryOrder = ["RutaDatos", "dim_fecha", "dim_cultivo", "dim_hs6", "dim_municipio", "dim_ciclo", "dim_modalidad", "dim_flujo", "dim_pais", "dim_pais_comercio", "fact_produccion", "fact_produccion_mundial", "fact_comercio"]
+annotation PBI_QueryOrder = ["RutaDatos", "dim_fecha", "dim_cultivo", "dim_hs6", "dim_municipio", "dim_ciclo", "dim_modalidad", "dim_flujo", "dim_pais", "dim_pais_comercio", "fact_produccion", "fact_produccion_mundial", "fact_comercio", "dim_estado", "fact_avance"]
 
 annotation PBI_ProTooling = ["DevMode"]
 
@@ -25,6 +25,8 @@ ref table dim_pais_comercio
 ref table fact_produccion
 ref table fact_produccion_mundial
 ref table fact_comercio
+ref table dim_estado
+ref table fact_avance
 
 ref cultureInfo es-MX
 

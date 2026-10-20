@@ -4,6 +4,7 @@
     "p0inicio",
     "p1portada",
     "p2produccion",
+    "p2avance",
     "p3exportacion",
     "p4mundo",
     "pestado",
@@ -11,5 +12,5 @@
     "p6fuentes",
     "ptooltip"
   ],
-  "activePageName": "p5contraste"
+  "activePageName": "p0inicio"
 }

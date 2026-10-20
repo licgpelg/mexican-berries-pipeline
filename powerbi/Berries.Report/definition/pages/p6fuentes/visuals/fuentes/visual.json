@@ -64,6 +64,17 @@
               {
                 "textRuns": [
                   {
+                    "value": "SIAP / SADER — Avance mensual de siembras y cosechas, por estado, de octubre de 2024 al último mes publicado. Preliminar; misma licencia que el cierre. https://nube.agricultura.gob.mx/avance_agricola/",
+                    "textStyle": {
+                      "fontSize": "10pt",
+                      "color": "#1F2421"
+                    }
+                  }
+                ]
+              },
+              {
+                "textRuns": [
+                  {
                     "value": "Mapa de estados: el mapa de México incluido en el visual Shape map de Power BI.",
                     "textStyle": {
                       "fontSize": "10pt",
@@ -154,6 +165,17 @@
                 "textRuns": [
                   {
                     "value": "· FAO: «Tomatoes» de México suma jitomate y tomate verde; la FAO no separa la zarzamora.",
+                    "textStyle": {
+                      "fontSize": "10pt",
+                      "color": "#1F2421"
+                    }
+                  }
+                ]
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": "· Avance 2026: acumulado al corte y preliminar; se compara con el mismo corte del año agrícola anterior. Contra el cierre 2025, el último avance quedó entre 0.1 % y 6.7 % abajo en producción. No incluye el arándano.",
                     "textStyle": {
                       "fontSize": "10pt",
                       "color": "#1F2421"

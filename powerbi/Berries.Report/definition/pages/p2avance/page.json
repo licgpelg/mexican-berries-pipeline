@@ -1,0 +1,56 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/page/2.1.0/schema.json",
+  "name": "p2avance",
+  "displayName": "2026 preliminar",
+  "displayOption": "FitToPage",
+  "height": 720,
+  "width": 1280,
+  "objects": {
+    "background": [
+      {
+        "properties": {
+          "color": {
+            "solid": {
+              "color": {
+                "expr": {
+                  "Literal": {
+                    "Value": "'#F4F1EA'"
+                  }
+                }
+              }
+            }
+          },
+          "transparency": {
+            "expr": {
+              "Literal": {
+                "Value": "0D"
+              }
+            }
+          }
+        }
+      }
+    ]
+  },
+  "visualInteractions": [
+    {
+      "source": "s_cultivo_av",
+      "target": "t_avance",
+      "type": "NoFilter"
+    },
+    {
+      "source": "s_cultivo_av",
+      "target": "g_var",
+      "type": "NoFilter"
+    },
+    {
+      "source": "t_avance",
+      "target": "g_estados",
+      "type": "NoFilter"
+    },
+    {
+      "source": "g_var",
+      "target": "g_estados",
+      "type": "NoFilter"
+    }
+  ]
+}

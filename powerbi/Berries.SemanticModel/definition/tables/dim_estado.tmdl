@@ -1,0 +1,28 @@
+/// Las 32 entidades con su clave del INEGI. La usa el avance mensual del SIAP, que se publica por estado; el cierre sigue colgando de dim_municipio.
+table dim_estado
+	lineageTag: 1716092a-83b3-4913-a77c-8774722a44f3
+
+	column id_estado
+		dataType: int64
+		isHidden
+		lineageTag: 4b269e57-c30e-43d8-8ba0-4c2e65c6e3bc
+		summarizeBy: none
+		sourceColumn: id_estado
+	column estado
+		dataType: string
+		dataCategory: StateOrProvince
+		lineageTag: 08601834-62db-4455-bee3-854027d041a1
+		summarizeBy: none
+		sourceColumn: estado
+		sortByColumn: id_estado
+	partition dim_estado = m
+		mode: import
+		source =
+				let
+				    Origen = Csv.Document(File.Contents(RutaDatos & "dim_estado.csv"), [Delimiter = ",", Encoding = 65001, QuoteStyle = QuoteStyle.Csv]),
+				    Encabezados = Table.PromoteHeaders(Origen, [PromoteAllScalars = true]),
+				    Tipos = Table.TransformColumnTypes(Encabezados, {{"id_estado", Int64.Type}, {"estado", type text}}, "en-US")
+				in
+				    Tipos
+
+	annotation PBI_ResultType = Table

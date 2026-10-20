@@ -17,7 +17,7 @@ decisión**, no aprobadas.
 | Banxico SIE (FIX) | diario | al día | REST | token gratis | [NC] | baja | MVP, pendiente licencia |
 | US Census Intl Trade | país × HS, valor y cantidad | mensual 2010 a ~ago-2026 [NC] | REST | clave gratis | pública, con aviso [D] | baja | fase 2 |
 | USDA AMS MARS | mercados terminales, cruces desde México | diario-semanal [NC] | REST | clave gratis | dominio público EE. UU. [NC] | media | fase 2 |
-| SIAP Avance mensual | municipio | mensual | formulario AJAX | no | ambigua | alta | descartada por ahora |
+| SIAP Avance mensual | estado (también municipio), 65 cultivos, **sin arándano** [V] | corte mensual, a sep-2026 [V] | xajax (POST) | no | la misma del cierre [NC] | media | **en uso desde el 2026-10-19**, preliminar; pendiente licencia |
 | FAS GATS | igual que Census | mensual | REST / web | sí | dominio público [NC] | media | redundante con Census |
 | UN Comtrade | mundial | — | REST | sí | **prohíbe redistribuir** [V] | — | **descartada** |
 
@@ -42,6 +42,33 @@ decisión**, no aprobadas.
   transferirlo a terceros. Los «Términos de Libre Uso MX» del Gobierno federal
   sí permiten redistribuir citando la fuente, pero no se confirmó que se
   apliquen a este conjunto (datos.gob.mx devolvió 403).
+
+### SIAP / SADER — Avance mensual de siembras y cosechas (desde el 2026-10-19)
+
+- Página: https://nube.agricultura.gob.mx/avance_agricola/ [V]. No tiene descarga
+  directa: el formulario llama por **xajax** (POST a la misma URL, `xajax=<función>` y
+  `xajaxargs[]`) y la respuesta es un XML con la tabla en HTML. `src/siap_avance.py`
+  abre la sesión con un GET y llama a `reporte` con: tipo 1 (por ubicación), ciclo 5
+  «Cíclicos - Perennes», modalidad 3 «Riego + Temporal», opción 2 «por entidad», el
+  cultivo, la unidad «Tonelada» y el mes. El botón «Excel» (`Clases/reporte.php`)
+  depende de la sesión y no hace falta.
+- **Cultivos**: 65 en el catálogo; están 7 de los 8 del proyecto. **El arándano no
+  está**: para él solo hay cierre anual. Los ids del avance no son los del cierre
+  (fresa 150, frambuesa 149, zarzamora 420, papa 283, jitomate 389, tomate verde 390,
+  maíz grano 225).
+- **Año agrícola** [V]: el año N va de octubre de N-1 (siembras de otoño-invierno) a
+  marzo de N+1. Entre octubre y marzo una consulta trae dos tablas, una por año
+  agrícola; cada una dice su año y su fecha de corte («Situación al 30 de junio de
+  2026»). Las cifras son **acumuladas** al corte.
+- Precio medio rural y valor de la producción vienen en el HTML **comentados**: el
+  SIAP no los publica en el avance, y aquí tampoco se usan.
+- Datos al 2026-10-19: año agrícola 2026 con cortes de oct-2025 a sep-2026; 2025,
+  de ene-2025 a mar-2026 (de oct a dic-2024 no se bajó: el corte de enero ya acumula).
+- **Contra el cierre** (año agrícola 2025, corte del 31-03-2026): superficie sembrada
+  igual o casi (0 a -0.7 %); producción **por debajo** entre 0.1 % (papa) y 6.7 %
+  (frambuesa). El avance es provisional y se queda corto. Tolerancia del cruce: 10 %
+  en producción y 2 % en superficie.
+- Licencia: la misma situación que el cierre (pendiente, pendiente 6).
 
 ### DataMéxico (Secretaría de Economía) — comercio exterior
 

@@ -58,7 +58,11 @@ def proj(campo, nombre=None, activo=True):
 
 
 def literal(v):
-    return f"{v}L" if isinstance(v, int) else "'" + v.replace("'", "''") + "'"
+    if isinstance(v, int):
+        return f"{v}L"
+    if v.startswith("datetime'"):  # fecha ya escrita como literal de Power BI
+        return v
+    return "'" + v.replace("'", "''") + "'"
 
 
 def condicion(p, valores, excluir=False):
@@ -132,6 +136,7 @@ class Pagina:
     def __init__(self, nombre, visible, titulo, subtitulo, ancho_titulo=1216, filtros=(),
                  ancho=1280, alto=720, vinculo=None, oculta=False, banda=True):
         self.nombre, self.visible, self.visuales = nombre, visible, []
+        self.interacciones = []  # (origen, destino, tipo): «NoFilter» corta el filtro cruzado
         self.filtros = list(filtros)
         self.ancho, self.alto, self.vinculo, self.oculta = ancho, alto, vinculo, oculta
         self.z = 0
@@ -291,7 +296,7 @@ class Pagina:
                                          "drillFilterOtherVisuals": True}, filtros)
 
     def segmentador(self, nombre, x, y, w, h, campo, titulo, modo="Basic", horizontal=True,
-                    sincro=None, inicial=None, oculto=False, sobre_banda=False):
+                    sincro=None, inicial=None, oculto=False, sobre_banda=False, unico=False):
         general = {"orientation": lit("1D" if horizontal else "0D")}
         if inicial:
             e = campo["Column"]["Expression"]["SourceRef"]["Entity"]
@@ -307,7 +312,7 @@ class Pagina:
             "query": {"queryState": {"Values": {"projections": [proj(campo)]}}},
             "objects": {"data": [{"properties": {"mode": lit(f"'{modo}'")}}],
                         "general": [{"properties": general}],
-                        "selection": [{"properties": {"singleSelect": lit("false")}}],
+                        "selection": [{"properties": {"singleSelect": lit("true" if unico else "false")}}],
                         "header": [{"properties": {"show": lit("false")}}]},
             "visualContainerObjects": vco,
             "drillFilterOtherVisuals": True}
@@ -365,6 +370,9 @@ class Pagina:
             pagina["visibility"] = "HiddenInViewMode"
         if self.filtros:
             pagina["filterConfig"] = {"filters": self.filtros}
+        if self.interacciones:
+            pagina["visualInteractions"] = [{"source": o, "target": d, "type": t}
+                                            for o, d, t in self.interacciones]
         (d / "visuals").mkdir(parents=True, exist_ok=True)
         (d / "page.json").write_text(json.dumps(pagina, indent=2, ensure_ascii=False), encoding="utf-8")
         for v in self.visuales:
@@ -397,6 +405,12 @@ T_RESUMEN = med(P, "Título resumen"); T_PROD = med(P, "Título producción")
 T_EXP = med(P, "Título exportación"); T_MUNDO = med(P, "Título mundo")
 T_CONTRASTE = med(P, "Título contraste"); T_ESTADO = med(P, "Título estado")
 T_ESTADO_VALOR = med(P, "Título estado: valor")
+A = "fact_avance"
+AV = med(A, "Avance (t)"); AV_ANT = med(A, "Avance mismo corte año anterior (t)")
+AV_VAR = med(A, "Var. avance %"); AV_HA = med(A, "Avance sembrada (ha)")
+AV_HA_VAR = med(A, "Var. sembrada %"); T_AVANCE = med(A, "Título avance")
+CORTE = col(A, "fecha_corte"); ESTADO_AV = col("dim_estado", "estado")
+SIN_ARANDANO = filtro("sin_arandano", "dim_cultivo", "cultivo", ["Arándano"], excluir=True)
 ANCHO = 850  # el título deja sitio a los segmentadores de la cabecera
 TOOLTIP = "ptooltip"; FICHA = "pestado"
 
@@ -460,6 +474,38 @@ p.grafico("g_estado", "clusteredBarChart", 688, 116, 560, 270, ESTADO, PROD,
           "Los estados que más producen, 2025 (t)", filtros=[anio("f", [2025])], orden_medida=True,
           etiquetas=True, unidades_etiqueta="1D", tooltip=TOOLTIP, relleno=COLOR_MAPA)
 p.grafico("g_serie", "lineChart", 688, 398, 560, 298, ANIO, PROD, "Producción por año (t)", serie=CULTIVO)
+paginas.append(p)
+
+# 2b. Avance 2026: el año en curso, preliminar. Compara cada corte con el mismo día del año
+# agrícola anterior, nunca con un año cerrado: medio año contra uno entero parece caída.
+p = Pagina("p2avance", "2026 preliminar", T_AVANCE,
+           "SIAP, avance mensual de siembras y cosechas · cifras PRELIMINARES, acumuladas al corte · elige la fecha de corte arriba a la derecha",
+           ancho_titulo=ANCHO)
+p.segmentador("s_corte", 900, 14, 348, 72, CORTE, "Fecha de corte", modo="Dropdown", unico=True,
+              inicial=["datetime'2026-06-30T00:00:00'"])
+p.tabla("t_avance", 32, 116, 760, 300,
+        [(CULTIVO, "Cultivo"), (AV, "Acumulado al corte (t)"),
+         (AV_ANT, "Mismo corte, año anterior (t)"), (AV_VAR, "Variación"),
+         (AV_HA, "Sembrada (ha)"), (AV_HA_VAR, "Var. sembrada")],
+        "Producción al corte contra el mismo corte del año agrícola anterior",
+        filtros=[SIN_ARANDANO], orden=AV, totales=False)
+p.grafico("g_var", "clusteredBarChart", 808, 116, 440, 300, CULTIVO, AV_VAR,
+          "Variación contra el mismo corte del año anterior", filtros=[SIN_ARANDANO],
+          orden_medida=True, etiquetas=True)
+p.segmentador("s_cultivo_av", 32, 430, 300, 76, CULTIVO, "Cultivo de la gráfica de estados",
+              modo="Dropdown", unico=True, inicial=["Fresa"])
+p.texto("nota", 32, 518, 300, 178, [
+    ("Cómo leerlo", 11, True, VERDE),
+    ("Cifras preliminares: con el año agrícola 2025, el cierre del SIAP quedó entre 0 % y 7 % por encima del último avance.", 9, False, TINTA),
+    ("El año agrícola va de octubre a marzo del año siguiente: las cifras se acumulan desde octubre (otoño-invierno) o enero (perennes).", 9, False, TINTA),
+    ("El arándano no se publica en el avance: solo en el cierre anual.", 9, False, TINTA)])
+p.grafico("g_estados", "clusteredBarChart", 348, 430, 900, 266, ESTADO_AV, AV,
+          "Producción acumulada al corte por estado (t)", filtros=[SIN_ARANDANO],
+          orden_medida=True, etiquetas=True, unidades_etiqueta="1D")
+# El cultivo de la gráfica de estados no filtra la tabla ni la gráfica de variación, que
+# enseñan los siete; y un clic en ellas no cambia la de estados, que manda el segmentador.
+p.interacciones += [("s_cultivo_av", "t_avance", "NoFilter"), ("s_cultivo_av", "g_var", "NoFilter"),
+                    ("t_avance", "g_estados", "NoFilter"), ("g_var", "g_estados", "NoFilter")]
 paginas.append(p)
 
 # 3. Exportación
@@ -547,6 +593,7 @@ p.texto("fuentes", 32, 116, 1216, 580, [
     ("SIAP / SADER — Cierre de la producción agrícola, 2003-2025, por municipio. Datos abiertos del Gobierno de México; licencia por confirmar con el SIAP. https://nube.agricultura.gob.mx/datosAbiertos/Agricola.php", 10, False, TINTA),
     ("DataMéxico — Secretaría de Economía. Comercio exterior mensual por fracción arancelaria (HS6) y país, 2006 a julio de 2026, en USD. Licencia por confirmar. https://www.economia.gob.mx/datamexico/", 10, False, TINTA),
     ("FAOSTAT — FAO, Crops and livestock products (QCL), 1961-2024. Licencia CC BY 4.0. https://www.fao.org/faostat/", 10, False, TINTA),
+    ("SIAP / SADER — Avance mensual de siembras y cosechas, por estado, de octubre de 2024 al último mes publicado. Preliminar; misma licencia que el cierre. https://nube.agricultura.gob.mx/avance_agricola/", 10, False, TINTA),
     ("Mapa de estados: el mapa de México incluido en el visual Shape map de Power BI.", 10, False, TINTA),
     ("", 6, False, TINTA),
     ("Metodología y advertencias", 13, True, VERDE),
@@ -556,6 +603,7 @@ p.texto("fuentes", 32, 116, 1216, 580, [
     ("· El CSV abierto del SIAP de 2020 y 2021 no incluye el arándano; la FAO sí lo tiene. El hueco se declara, no se rellena.", 10, False, TINTA),
     ("· Comercio: frambuesa y zarzamora comparten la fracción 0810.20; el arándano (0810.40) incluye otros Vaccinium. El tomate verde no tiene fracción propia.", 10, False, TINTA),
     ("· FAO: «Tomatoes» de México suma jitomate y tomate verde; la FAO no separa la zarzamora.", 10, False, TINTA),
+    ("· Avance 2026: acumulado al corte y preliminar; se compara con el mismo corte del año agrícola anterior. Contra el cierre 2025, el último avance quedó entre 0.1 % y 6.7 % abajo en producción. No incluye el arándano.", 10, False, TINTA),
     ("· Verificación: el SIAP cuadra con la FAO (diferencias menores al 3 %) y DataMéxico con sus propios totales anuales.", 10, False, TINTA),
     ("", 6, False, TINTA),
     ("Proyecto personal, sin relación con ninguna empresa. Datos públicos.", 10, False, GRIS),

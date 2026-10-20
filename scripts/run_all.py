@@ -16,7 +16,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 import pandas as pd  # noqa: E402
 
-from src import banxico, datamexico, faostat, siap  # noqa: E402
+from src import banxico, datamexico, faostat, siap, siap_avance  # noqa: E402
 from src.comun import escribir_gold  # noqa: E402
 from src.cultivos import dim_cultivo, dim_hs6  # noqa: E402
 from src.fechas import dim_fecha  # noqa: E402
@@ -32,6 +32,14 @@ HUECOS_SIAP = {(2020, 4), (2021, 4)}
 # de 2008 hay 78 578 USD de exportación de fresa sin país, que se pierden al desglosar
 # por país. Se aceptan solo con esta cifra exacta; cualquier otra diferencia es roja.
 DIFERENCIAS_DATAMEXICO = {(2008, "081010", 2): 78_578}
+
+
+# Avance mensual contra el cierre del mismo año agrícola. Medido el 2026-10-19 con el año
+# agrícola 2025 (último corte, 31-03-2026): la superficie sembrada coincide (0 a -0.7 %) y la
+# producción queda por DEBAJO del cierre entre 0.1 % y 6.7 % (frambuesa), porque el cierre
+# suma revisiones. Más del 10 % en producción o del 2 % en superficie ya no es revisión.
+TOLERANCIA_AVANCE_T = 0.10
+TOLERANCIA_AVANCE_HA = 0.02
 
 
 # «Tomatoes» de la FAO, para México, es jitomate + tomate verde del SIAP: coinciden al
@@ -55,6 +63,23 @@ def cruce_siap_fao(prod: pd.DataFrame, mundial: pd.DataFrame) -> list[str]:
             rojos.append(f"SIAP sin dato y FAO con {r.fao:,.0f} t: {anio} cultivo {cultivo}")
         elif abs(r.siap / r.fao - 1) > TOLERANCIA_FAO:
             rojos.append(f"SIAP {r.siap:,.0f} t contra FAO {r.fao:,.0f} t: {anio} cultivo {cultivo}")
+    return rojos
+
+
+def cruce_avance_cierre(avance: pd.DataFrame, cierre: pd.DataFrame) -> list[str]:
+    """El último corte de cada año agrícola que ya tiene cierre, cultivo por cultivo."""
+    rojos = []
+    for anio in sorted(set(avance.anio_agricola) & set(cierre.anio)):
+        a = avance[avance.anio_agricola == anio]
+        a = a[a.fecha_corte == a.fecha_corte.max()].groupby("id_cultivo")
+        c = cierre[cierre.anio == anio].groupby("id_cultivo")
+        for col, tol in [("produccion_t", TOLERANCIA_AVANCE_T),
+                         ("superficie_sembrada_ha", TOLERANCIA_AVANCE_HA)]:
+            x = pd.concat({"avance": a[col].sum(), "cierre": c[col].sum()}, axis=1).dropna()
+            for cultivo, r in x.iterrows():
+                if abs(r.avance / r.cierre - 1) > tol:
+                    rojos.append(f"Avance {anio} {col} {r.avance:,.0f} contra cierre "
+                                 f"{r.cierre:,.0f}: cultivo {cultivo}")
     return rojos
 
 
@@ -84,6 +109,10 @@ def main() -> int:
         rutas_siap = siap.extraer(hoy.year - 1, forzar_ultimo=a.forzar)
         rutas_dm = datamexico.extraer(hoy.year, forzar=a.forzar)
         ruta_fao = faostat.extraer(forzar=a.forzar)
+        # Años agrícolas: el pasado (para comparar al mismo corte y cuadrar con su cierre)
+        # y el que corre.
+        anios_avance = [hoy.year - 1, hoy.year]
+        rutas_av = siap_avance.extraer(anios_avance, forzar_ultimo=a.forzar)
         ruta_bmx = None if a.sin_banxico else banxico.extraer()
     except Exception as e:  # una fuente caída: los datos no están
         print(f"ERROR al extraer: {e}")
@@ -92,6 +121,10 @@ def main() -> int:
     gold.update(siap.transformar(siap.leer(rutas_siap)))
     gold.update(datamexico.transformar(datamexico.leer(rutas_dm)))
     gold.update(faostat.transformar(*faostat.leer(ruta_fao)))
+    gold.update(siap_avance.transformar(siap_avance.leer(rutas_av, set(anios_avance))))
+    # Estados: los del cierre, para que el avance (por estado) y el mapa usen los mismos.
+    gold["dim_estado"] = (gold["dim_municipio"][["id_estado", "estado"]]
+                          .drop_duplicates("id_estado").sort_values("id_estado"))
     if ruta_bmx:
         gold.update(banxico.transformar(banxico.leer(ruta_bmx)))
     gold["dim_cultivo"] = dim_cultivo()
@@ -108,6 +141,10 @@ def main() -> int:
 
     rojos += cruce_siap_fao(gold["fact_produccion"], gold["fact_produccion_mundial"])
     rojos += cruce_datamexico(gold["fact_comercio"])
+    rojos += cruce_avance_cierre(gold["fact_avance"], gold["fact_produccion"])
+    faltan = set(gold["fact_avance"].id_estado) - set(gold["dim_estado"].id_estado)
+    if faltan:
+        rojos.append(f"Avance con estados que no están en el cierre: {sorted(faltan)}")
     print(f"Huecos declarados del SIAP (año, cultivo): {sorted(HUECOS_SIAP)}")
     print(f"Diferencias declaradas de DataMéxico: {DIFERENCIAS_DATAMEXICO}")
     if rojos:

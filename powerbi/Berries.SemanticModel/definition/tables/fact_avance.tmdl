@@ -1,0 +1,158 @@
+/// SIAP, Avance mensual de siembras y cosechas: corte (último día del mes) × año agrícola × estado × cultivo. Cifras ACUMULADAS al corte y PRELIMINARES. Sin arándano (el avance no lo publica). El año agrícola N va de octubre de N-1 a marzo de N+1: nunca sumar cortes entre sí; usar las medidas.
+table fact_avance
+	lineageTag: 58a8bccc-09df-4a41-8595-1506094cc727
+
+	/// Fecha de corte elegida (o la última). Es la misma para todos los cultivos y estados del visual.
+	measure 'Corte del avance' = CALCULATE ( MAX ( fact_avance[fecha_corte] ), REMOVEFILTERS ( dim_cultivo ), REMOVEFILTERS ( dim_estado ) )
+		formatString: d/mm/yyyy
+		displayFolder: Avance 2026 (preliminar)
+		lineageTag: e62979f1-6361-4221-919f-844b6a8bccfe
+
+	/// El más reciente con datos a ese corte. De octubre a marzo conviven dos: manda el nuevo.
+	measure 'Año agrícola del avance' =
+			VAR c = CALCULATE ( MAX ( fact_avance[fecha_corte] ), REMOVEFILTERS ( dim_cultivo ), REMOVEFILTERS ( dim_estado ) )
+			RETURN
+			    CALCULATE ( MAX ( fact_avance[anio_agricola] ), REMOVEFILTERS ( dim_cultivo ), REMOVEFILTERS ( dim_estado ), fact_avance[fecha_corte] = c )
+		formatString: 0
+		displayFolder: Avance 2026 (preliminar)
+		lineageTag: 7815a862-db4e-4763-bc21-757e3fbc712a
+
+	/// Producción ACUMULADA del año agrícola hasta la fecha de corte. Preliminar: el cierre del SIAP suele quedar entre 0 % y 7 % arriba (medido con 2025).
+	measure 'Avance (t)' =
+			VAR c = CALCULATE ( MAX ( fact_avance[fecha_corte] ), REMOVEFILTERS ( dim_cultivo ), REMOVEFILTERS ( dim_estado ) )
+			VAR aa = CALCULATE ( MAX ( fact_avance[anio_agricola] ), REMOVEFILTERS ( dim_cultivo ), REMOVEFILTERS ( dim_estado ), fact_avance[fecha_corte] = c )
+			RETURN
+			    CALCULATE ( SUM ( fact_avance[produccion_t] ), fact_avance[fecha_corte] = c, fact_avance[anio_agricola] = aa )
+		formatString: #,0
+		displayFolder: Avance 2026 (preliminar)
+		lineageTag: 946e2dd5-153b-4e22-b7c2-f6d91b493f96
+
+	/// La producción del año agrícola anterior al mismo día de corte de hace 12 meses: compara periodos iguales, no un semestre contra un año entero.
+	measure 'Avance mismo corte año anterior (t)' =
+			VAR c = CALCULATE ( MAX ( fact_avance[fecha_corte] ), REMOVEFILTERS ( dim_cultivo ), REMOVEFILTERS ( dim_estado ) )
+			VAR aa = CALCULATE ( MAX ( fact_avance[anio_agricola] ), REMOVEFILTERS ( dim_cultivo ), REMOVEFILTERS ( dim_estado ), fact_avance[fecha_corte] = c )
+			RETURN
+			    CALCULATE (
+			        SUM ( fact_avance[produccion_t] ),
+			        REMOVEFILTERS ( fact_avance[fecha_corte] ),
+			        REMOVEFILTERS ( fact_avance[anio_agricola] ),
+			        REMOVEFILTERS ( dim_fecha ),
+			        fact_avance[fecha_corte] = EOMONTH ( c, -12 ),
+			        fact_avance[anio_agricola] = aa - 1
+			    )
+		formatString: #,0
+		displayFolder: Avance 2026 (preliminar)
+		lineageTag: 5af32947-80e6-48ab-ad0a-19f72c81b2bf
+
+	measure 'Var. avance %' =
+			VAR actual = [Avance (t)]
+			VAR anterior = [Avance mismo corte año anterior (t)]
+			RETURN
+			    DIVIDE ( actual - anterior, anterior )
+		formatString: 0.0%
+		displayFolder: Avance 2026 (preliminar)
+		lineageTag: 2c811bce-4672-4b48-b5a8-abe6bd1966f8
+
+	/// Superficie sembrada del año agrícola hasta el corte.
+	measure 'Avance sembrada (ha)' =
+			VAR c = CALCULATE ( MAX ( fact_avance[fecha_corte] ), REMOVEFILTERS ( dim_cultivo ), REMOVEFILTERS ( dim_estado ) )
+			VAR aa = CALCULATE ( MAX ( fact_avance[anio_agricola] ), REMOVEFILTERS ( dim_cultivo ), REMOVEFILTERS ( dim_estado ), fact_avance[fecha_corte] = c )
+			RETURN
+			    CALCULATE ( SUM ( fact_avance[superficie_sembrada_ha] ), fact_avance[fecha_corte] = c, fact_avance[anio_agricola] = aa )
+		formatString: #,0
+		displayFolder: Avance 2026 (preliminar)
+		lineageTag: 237c817b-27cd-46a0-ae46-6317c350e1a0
+
+	measure 'Avance sembrada año anterior (ha)' =
+			VAR c = CALCULATE ( MAX ( fact_avance[fecha_corte] ), REMOVEFILTERS ( dim_cultivo ), REMOVEFILTERS ( dim_estado ) )
+			VAR aa = CALCULATE ( MAX ( fact_avance[anio_agricola] ), REMOVEFILTERS ( dim_cultivo ), REMOVEFILTERS ( dim_estado ), fact_avance[fecha_corte] = c )
+			RETURN
+			    CALCULATE (
+			        SUM ( fact_avance[superficie_sembrada_ha] ),
+			        REMOVEFILTERS ( fact_avance[fecha_corte] ),
+			        REMOVEFILTERS ( fact_avance[anio_agricola] ),
+			        REMOVEFILTERS ( dim_fecha ),
+			        fact_avance[fecha_corte] = EOMONTH ( c, -12 ),
+			        fact_avance[anio_agricola] = aa - 1
+			    )
+		formatString: #,0
+		displayFolder: Avance 2026 (preliminar)
+		lineageTag: d770a1af-ec55-4db0-9268-b5323ae2db7c
+
+	measure 'Var. sembrada %' =
+			VAR actual = [Avance sembrada (ha)]
+			VAR anterior = [Avance sembrada año anterior (ha)]
+			RETURN
+			    DIVIDE ( actual - anterior, anterior )
+		formatString: 0.0%
+		displayFolder: Avance 2026 (preliminar)
+		lineageTag: 9e4f84b6-68e5-451e-9df0-e21ed08e6b4a
+
+	/// Título dinámico de la página del avance.
+	measure 'Título avance' =
+			VAR c = CALCULATE ( MAX ( fact_avance[fecha_corte] ), REMOVEFILTERS ( dim_cultivo ), REMOVEFILTERS ( dim_estado ) )
+			VAR aa = CALCULATE ( MAX ( fact_avance[anio_agricola] ), REMOVEFILTERS ( dim_cultivo ), REMOVEFILTERS ( dim_estado ), fact_avance[fecha_corte] = c )
+			RETURN
+			    "Producción preliminar del año agrícola " & aa & ", acumulada al " & FORMAT ( c, "d \de mmmm \de yyyy" )
+		displayFolder: Avance 2026 (preliminar)
+		lineageTag: 50dd91c2-fd11-4cd6-9cec-cf59f76dc5b7
+
+	column fecha_corte
+		dataType: dateTime
+		formatString: Short Date
+		isHidden
+		lineageTag: 730e431a-0124-466c-ad5a-c774a385666a
+		summarizeBy: none
+		sourceColumn: fecha_corte
+	column anio_agricola
+		dataType: int64
+		lineageTag: e48ac43e-7206-4814-a370-681be5162213
+		summarizeBy: none
+		sourceColumn: anio_agricola
+	column id_estado
+		dataType: int64
+		isHidden
+		lineageTag: b41055cc-1014-4f70-9259-f0a6e0a2ec84
+		summarizeBy: none
+		sourceColumn: id_estado
+	column id_cultivo
+		dataType: int64
+		isHidden
+		lineageTag: 6b1d7566-50e9-4147-9872-b36be0c7bbec
+		summarizeBy: none
+		sourceColumn: id_cultivo
+	column superficie_sembrada_ha
+		dataType: double
+		isHidden
+		lineageTag: a6c1e036-d930-44e3-a080-42e38a8eda0e
+		summarizeBy: sum
+		sourceColumn: superficie_sembrada_ha
+	column superficie_cosechada_ha
+		dataType: double
+		isHidden
+		lineageTag: 0e9d5a81-0f23-473d-a3f2-d5be8210b0fc
+		summarizeBy: sum
+		sourceColumn: superficie_cosechada_ha
+	column superficie_siniestrada_ha
+		dataType: double
+		isHidden
+		lineageTag: 4f085f05-3c9d-4c74-a389-3cba7b3cb447
+		summarizeBy: sum
+		sourceColumn: superficie_siniestrada_ha
+	column produccion_t
+		dataType: double
+		isHidden
+		lineageTag: ddbd9dcd-f157-4440-b636-bf70c1fd105b
+		summarizeBy: sum
+		sourceColumn: produccion_t
+	partition fact_avance = m
+		mode: import
+		source =
+				let
+				    Origen = Csv.Document(File.Contents(RutaDatos & "fact_avance.csv"), [Delimiter = ",", Encoding = 65001, QuoteStyle = QuoteStyle.Csv]),
+				    Encabezados = Table.PromoteHeaders(Origen, [PromoteAllScalars = true]),
+				    Tipos = Table.TransformColumnTypes(Encabezados, {{"fecha_corte", type date}, {"anio_agricola", Int64.Type}, {"id_cultivo", Int64.Type}, {"id_estado", Int64.Type}, {"superficie_sembrada_ha", type number}, {"superficie_cosechada_ha", type number}, {"superficie_siniestrada_ha", type number}, {"produccion_t", type number}}, "en-US")
+				in
+				    Tipos
+
+	annotation PBI_ResultType = Table

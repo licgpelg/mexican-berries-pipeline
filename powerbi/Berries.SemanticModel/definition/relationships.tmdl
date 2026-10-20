@@ -46,3 +46,14 @@ relationship aeb9851a-3470-4750-8033-c3a3e4c53a61
 	fromColumn: fact_comercio.id_pais_iso3
 	toColumn: dim_pais_comercio.id_pais_iso3
 
+relationship f0b8c6e6-a01d-4b69-a39e-02f0fa3097a3
+	fromColumn: fact_avance.fecha_corte
+	toColumn: dim_fecha.fecha
+
+relationship a16aee77-99d5-40a5-8bf6-27b32c214b9c
+	fromColumn: fact_avance.id_cultivo
+	toColumn: dim_cultivo.id_cultivo
+
+relationship ae2ce109-126c-4277-b24e-3c3dc6d95998
+	fromColumn: fact_avance.id_estado
+	toColumn: dim_estado.id_estado
