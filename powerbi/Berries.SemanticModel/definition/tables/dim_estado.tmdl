@@ -8,13 +8,15 @@ table dim_estado
 		lineageTag: 4b269e57-c30e-43d8-8ba0-4c2e65c6e3bc
 		summarizeBy: none
 		sourceColumn: id_estado
+
 	column estado
 		dataType: string
-		dataCategory: StateOrProvince
 		lineageTag: 08601834-62db-4455-bee3-854027d041a1
+		dataCategory: StateOrProvince
 		summarizeBy: none
 		sourceColumn: estado
 		sortByColumn: id_estado
+
 	partition dim_estado = m
 		mode: import
 		source =
@@ -26,3 +28,4 @@ table dim_estado
 				    Tipos
 
 	annotation PBI_ResultType = Table
+

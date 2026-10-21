@@ -256,6 +256,111 @@ cultureInfo es-MX
 			          }
 			        }
 			      ]
+			    },
+			    "fact_avance.avance_t": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "fact_avance",
+			          "ConceptualProperty": "Avance (t)"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Acumulado al corte (t)": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "fact_avance.avance_mismo_corte_año_anterior_t": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "fact_avance",
+			          "ConceptualProperty": "Avance mismo corte año anterior (t)"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Mismo corte, año anterior (t)": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "fact_avance.var__avance_": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "fact_avance",
+			          "ConceptualProperty": "Var. avance %"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Variación": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "fact_avance.avance_sembrada_ha": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "fact_avance",
+			          "ConceptualProperty": "Avance sembrada (ha)"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Sembrada (ha)": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "fact_avance.var__sembrada_": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "fact_avance",
+			          "ConceptualProperty": "Var. sembrada %"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Var. sembrada": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
 			    }
 			  }
 			}

@@ -99,52 +99,62 @@ table fact_avance
 
 	column fecha_corte
 		dataType: dateTime
-		formatString: Short Date
 		isHidden
+		formatString: Short Date
 		lineageTag: 730e431a-0124-466c-ad5a-c774a385666a
 		summarizeBy: none
 		sourceColumn: fecha_corte
+
+		annotation UnderlyingDateTimeDataType = Date
+
 	column anio_agricola
 		dataType: int64
 		lineageTag: e48ac43e-7206-4814-a370-681be5162213
 		summarizeBy: none
 		sourceColumn: anio_agricola
+
 	column id_estado
 		dataType: int64
 		isHidden
 		lineageTag: b41055cc-1014-4f70-9259-f0a6e0a2ec84
 		summarizeBy: none
 		sourceColumn: id_estado
+
 	column id_cultivo
 		dataType: int64
 		isHidden
 		lineageTag: 6b1d7566-50e9-4147-9872-b36be0c7bbec
 		summarizeBy: none
 		sourceColumn: id_cultivo
+
 	column superficie_sembrada_ha
 		dataType: double
 		isHidden
 		lineageTag: a6c1e036-d930-44e3-a080-42e38a8eda0e
 		summarizeBy: sum
 		sourceColumn: superficie_sembrada_ha
+
 	column superficie_cosechada_ha
 		dataType: double
 		isHidden
 		lineageTag: 0e9d5a81-0f23-473d-a3f2-d5be8210b0fc
 		summarizeBy: sum
 		sourceColumn: superficie_cosechada_ha
+
 	column superficie_siniestrada_ha
 		dataType: double
 		isHidden
 		lineageTag: 4f085f05-3c9d-4c74-a389-3cba7b3cb447
 		summarizeBy: sum
 		sourceColumn: superficie_siniestrada_ha
+
 	column produccion_t
 		dataType: double
 		isHidden
 		lineageTag: ddbd9dcd-f157-4440-b636-bf70c1fd105b
 		summarizeBy: sum
 		sourceColumn: produccion_t
+
 	partition fact_avance = m
 		mode: import
 		source =
@@ -156,3 +166,4 @@ table fact_avance
 				    Tipos
 
 	annotation PBI_ResultType = Table
+

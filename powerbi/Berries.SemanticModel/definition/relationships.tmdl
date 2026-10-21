@@ -57,3 +57,4 @@ relationship a16aee77-99d5-40a5-8bf6-27b32c214b9c
 relationship ae2ce109-126c-4277-b24e-3c3dc6d95998
 	fromColumn: fact_avance.id_estado
 	toColumn: dim_estado.id_estado
+
