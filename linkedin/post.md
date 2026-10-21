@@ -1,8 +1,9 @@
 # Borrador del post de LinkedIn
 
 Cifras comprobadas por consulta DAX contra el modelo (2026-10-13 y 2026-10-19).
-Carrusel: `linkedin/capturas/` en este orden: portada, producción, exportación,
-México en el mundo, 2026 preliminar, contraste.
+Carrusel: `linkedin/carrusel.pdf` (7 páginas, 1080 × 1350), generado con
+`py scripts/generar_carrusel.py` desde `linkedin/capturas/`. En LinkedIn se sube como
+«documento» y se le pone título.
 
 ---
 

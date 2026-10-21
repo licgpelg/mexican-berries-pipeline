@@ -23,3 +23,6 @@ CLAUDE.md
 AGENTS.md
 memory.md
 guia_estudio.md
+
+# Vista previa del carrusel: se regenera con scripts/generar_carrusel.py
+linkedin/carrusel/

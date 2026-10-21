@@ -2,3 +2,6 @@
 pandas==3.0.3
 requests==2.34.2
 urllib3==2.7.0
+# Solo para scripts/generar_carrusel.py (PDF del carrusel de LinkedIn):
+pillow==12.2.0
+pymupdf==1.28.2
