@@ -2,8 +2,8 @@
 
     py scripts/run_all.py [--sin-banxico] [--forzar]
 
-Salida: 0 todo bien · 1 una fuente no se pudo bajar · 2 los datos están pero un cuadre
-falla.
+Salida: 0 todo bien · 1 una fuente no se pudo bajar (si tenía una descarga anterior, Gold
+se escribe con ella y el resto sí queda al día) · 2 los datos están pero un cuadre falla.
 """
 from __future__ import annotations
 
@@ -105,17 +105,33 @@ def main() -> int:
     hoy = date.today()
     gold, rojos = {}, []
 
-    try:
-        rutas_siap = siap.extraer(hoy.year - 1, forzar_ultimo=a.forzar)
-        rutas_dm = datamexico.extraer(hoy.year, forzar=a.forzar)
-        ruta_fao = faostat.extraer(forzar=a.forzar)
-        # Años agrícolas: el pasado (para comparar al mismo corte y cuadrar con su cierre)
-        # y el que corre.
-        anios_avance = [hoy.year - 1, hoy.year]
-        rutas_av = siap_avance.extraer(anios_avance, forzar_ultimo=a.forzar)
-        ruta_bmx = None if a.sin_banxico else banxico.extraer()
-    except Exception as e:  # una fuente caída: los datos no están
-        print(f"ERROR al extraer: {e}")
+    # Cada fuente por separado: con todas en un solo try, la caída de DataMéxico del
+    # 19 y el 21-10-2026 impidió también bajar FAOSTAT y el avance del SIAP.
+    avisos: list[str] = []  # fuentes que se quedaron con su descarga anterior
+    errores: list[str] = []  # fuentes sin ningún dato: no se puede escribir Gold
+
+    def bajar(nombre, funcion):
+        try:
+            return funcion()
+        except Exception as e:
+            errores.append(f"{nombre}: {e}")
+            return None
+
+    # Años agrícolas: el pasado (para comparar al mismo corte y cuadrar con su cierre)
+    # y el que corre.
+    anios_avance = [hoy.year - 1, hoy.year]
+    rutas_siap = bajar("SIAP", lambda: siap.extraer(hoy.year - 1, forzar_ultimo=a.forzar))
+    rutas_dm = bajar("DataMéxico", lambda: datamexico.extraer(hoy.year, forzar=a.forzar,
+                                                               avisos=avisos))
+    ruta_fao = bajar("FAOSTAT", lambda: faostat.extraer(forzar=a.forzar))
+    rutas_av = bajar("SIAP avance",
+                     lambda: siap_avance.extraer(anios_avance, forzar_ultimo=a.forzar))
+    ruta_bmx = None if a.sin_banxico else bajar("Banxico", banxico.extraer)
+    for aviso in avisos:
+        print(f"AVISO: {aviso}")
+    if errores:
+        for e in errores:
+            print(f"ERROR al extraer {e}")
         return 1
 
     gold.update(siap.transformar(siap.leer(rutas_siap)))
@@ -140,7 +156,11 @@ def main() -> int:
         print(f"  {ruta.name:<32} {len(df):>7} filas")
 
     rojos += cruce_siap_fao(gold["fact_produccion"], gold["fact_produccion_mundial"])
-    rojos += cruce_datamexico(gold["fact_comercio"])
+    try:
+        rojos += cruce_datamexico(gold["fact_comercio"])
+    except Exception as e:  # pide al cubo los totales: si está caído, no se puede cuadrar
+        avisos.append(f"cuadre de DataMéxico sin hacer, el cubo no respondió ({type(e).__name__})")
+        print(f"AVISO: {avisos[-1]}")
     rojos += cruce_avance_cierre(gold["fact_avance"], gold["fact_produccion"])
     faltan = set(gold["fact_avance"].id_estado) - set(gold["dim_estado"].id_estado)
     if faltan:
@@ -151,6 +171,11 @@ def main() -> int:
         print(f"{len(rojos)} cuadres en rojo:")
         for r in rojos:
             print("  -", r)
+    # Una fuente atrasada pesa más que un cuadre: lo que falta son datos al día.
+    if avisos:
+        print(f"{len(avisos)} avisos: Gold escrito, pero no todo está al día.")
+        return 1
+    if rojos:
         return 2
     print("Cuadres en verde.")
     return 0

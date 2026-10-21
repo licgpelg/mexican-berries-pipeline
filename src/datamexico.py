@@ -10,6 +10,7 @@ import json
 from datetime import date
 
 import pandas as pd
+import requests
 
 from .comun import BRONZE, sesion
 from .cultivos import codigos_hs6
@@ -35,21 +36,36 @@ def _datos(r) -> list:
     return j["data"]
 
 
-def extraer(ultimo_anio: int | None = None, forzar: bool = False) -> list:
+def extraer(ultimo_anio: int | None = None, forzar: bool = False,
+            avisos: list[str] | None = None) -> list:
     """Un JSON por año en Bronze. Se vuelven a pedir los dos últimos años: la SE revisa
-    las cifras recientes y el año en curso crece cada mes."""
+    las cifras recientes y el año en curso crece cada mes.
+
+    Con `avisos`, un año que no responde y ya tiene descarga se queda con ella y lo anota
+    ahí en lugar de tumbar el ETL: el 19 y el 21-10-2026 todo DataMéxico daba 502 en 0.3 s
+    (también su web), y por eso no se actualizaban las demás fuentes. Un año sin descarga
+    previa sigue siendo error."""
     ultimo_anio = ultimo_anio or date.today().year
     s = sesion()
     rutas = []
     for anio in range(PRIMER_ANIO, ultimo_anio + 1):
         destino = BRONZE / "datamexico" / f"comercio_{anio}_{FIRMA}.json"
         if forzar or not destino.exists() or anio >= ultimo_anio - 1:
-            # El servidor tarda 20-60 s por consulta y a ratos da 5xx (2026-10-13).
-            r = s.get(BASE, timeout=600, params={
-                "cube": CUBO, "drilldowns": "Month,HS6,Flow,Continent,Country",
-                "measures": "Trade Value", "HS6": ",".join(HS6), "Year": str(anio)})
-            destino.parent.mkdir(parents=True, exist_ok=True)
-            destino.write_text(json.dumps(_datos(r), ensure_ascii=False), encoding="utf-8")
+            try:
+                # El servidor tarda 20-60 s por consulta y a ratos da 5xx (2026-10-13).
+                r = s.get(BASE, timeout=600, params={
+                    "cube": CUBO, "drilldowns": "Month,HS6,Flow,Continent,Country",
+                    "measures": "Trade Value", "HS6": ",".join(HS6), "Year": str(anio)})
+                datos = _datos(r)
+            except (requests.RequestException, RuntimeError, ValueError) as e:
+                if avisos is None or not destino.exists():
+                    raise
+                del_dia = date.fromtimestamp(destino.stat().st_mtime).isoformat()
+                avisos.append(f"DataMéxico {anio} no respondió ({type(e).__name__}); "
+                              f"se usa la descarga del {del_dia}")
+            else:
+                destino.parent.mkdir(parents=True, exist_ok=True)
+                destino.write_text(json.dumps(datos, ensure_ascii=False), encoding="utf-8")
         rutas.append(destino)
     return rutas
 
