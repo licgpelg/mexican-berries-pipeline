@@ -19,7 +19,7 @@
               {
                 "textRuns": [
                   {
-                    "value": "Valor de la producción por hectárea cosechada, 2025 (SIAP, pesos corrientes) y saldo comercial 2025 (DataMéxico, USD) · sin filtro se ven los ocho cultivos",
+                    "value": "Valor por hectárea cosechada, 2025 (SIAP, MXN) y saldo comercial 2025 (DataMéxico, USD)",
                     "textStyle": {
                       "fontSize": "11pt",
                       "color": "#F5DDE3"

@@ -1,5 +1,5 @@
 {
-  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.13.0/schema.json",
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.12.0/schema.json",
   "name": "m_estados",
   "position": {
     "x": 32,
@@ -458,34 +458,6 @@
           ]
         },
         "howCreated": "User"
-      },
-      {
-        "name": "1d626dc5e33f4caa035b",
-        "field": {
-          "Column": {
-            "Expression": {
-              "SourceRef": {
-                "Entity": "dim_municipio"
-              }
-            },
-            "Property": "estado"
-          }
-        },
-        "type": "Categorical"
-      },
-      {
-        "name": "9968161d16b26286d186",
-        "field": {
-          "Measure": {
-            "Expression": {
-              "SourceRef": {
-                "Entity": "fact_produccion"
-              }
-            },
-            "Property": "Producción (t)"
-          }
-        },
-        "type": "Advanced"
       }
     ]
   }

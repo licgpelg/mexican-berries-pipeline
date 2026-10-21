@@ -36,5 +36,6 @@
     "type": "Tooltip",
     "parameters": []
   },
+  "type": "Tooltip",
   "visibility": "HiddenInViewMode"
 }

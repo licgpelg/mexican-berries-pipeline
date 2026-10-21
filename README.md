@@ -5,7 +5,6 @@
 > validates each one against an independent source, and feeds a star-schema Power BI model.
 
 ![Report overview](linkedin/capturas/portada.png)
-<!-- TODO: add the screenshot (1600 px wide) -->
 
 **Highlights (2025 unless noted)**
 

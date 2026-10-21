@@ -324,10 +324,10 @@ class Pagina:
     def cabecera_cultivo(self, sincro=True):
         """Segmentadores de grupo y cultivo sobre la banda, a la derecha. Sincronizados con
         Inicio, salvo en la página de contraste, que compara todos los cultivos."""
-        self.segmentador("s_grupo", 900, 14, 170, 72, GRUPO, "Grupo", modo="Dropdown",
+        self.segmentador("s_grupo", 900, 8, 170, 84, GRUPO, "Grupo", modo="Dropdown",
                          sincro="grupo" if sincro else None,
                          inicial=["Berries"] if sincro else None)
-        self.segmentador("s_cultivo", 1078, 14, 170, 72, CULTIVO, "Cultivo", modo="Dropdown",
+        self.segmentador("s_cultivo", 1078, 8, 170, 84, CULTIVO, "Cultivo", modo="Dropdown",
                          sincro="cultivo" if sincro else None)
 
     def boton(self, nombre, x, y, w, h, texto, destino=None, atras=False, relleno=BAYA):
@@ -366,6 +366,10 @@ class Pagina:
                                                               "transparency": lit("0D")}}]}}
         if self.vinculo:
             pagina["pageBinding"] = self.vinculo
+            # Sin «type» en la página, Desktop no la ofrece como tooltip aunque el
+            # pageBinding lo diga: el mapa no mostraba nada (así la escribe Desktop).
+            if self.vinculo.get("type") == "Tooltip":
+                pagina["type"] = "Tooltip"
         if self.oculta:
             pagina["visibility"] = "HiddenInViewMode"
         if self.filtros:
@@ -479,9 +483,9 @@ paginas.append(p)
 # 2b. Avance 2026: el año en curso, preliminar. Compara cada corte con el mismo día del año
 # agrícola anterior, nunca con un año cerrado: medio año contra uno entero parece caída.
 p = Pagina("p2avance", "2026 preliminar", T_AVANCE,
-           "SIAP, avance mensual de siembras y cosechas · cifras PRELIMINARES, acumuladas al corte · elige la fecha de corte arriba a la derecha",
+           "SIAP, avance mensual · cifras PRELIMINARES acumuladas al corte · elige el corte a la derecha",
            ancho_titulo=ANCHO)
-p.segmentador("s_corte", 900, 14, 348, 72, CORTE, "Fecha de corte", modo="Dropdown", unico=True,
+p.segmentador("s_corte", 900, 8, 348, 84, CORTE, "Fecha de corte", modo="Dropdown", unico=True,
               inicial=["datetime'2026-06-30T00:00:00'"])
 p.tabla("t_avance", 32, 116, 760, 300,
         [(CULTIVO, "Cultivo"), (AV, "Acumulado al corte (t)"),
@@ -510,7 +514,7 @@ paginas.append(p)
 
 # 3. Exportación
 p = Pagina("p3exportacion", "Exportación", T_EXP,
-           "Dólares corrientes · DataMéxico (SE) · frambuesa y zarzamora comparten la fracción 0810.20 · el tomate verde no tiene fracción propia · 2026 con datos a julio",
+           "DataMéxico (SE), dólares corrientes · frambuesa y zarzamora comparten fracción · 2026 a julio",
            ancho_titulo=ANCHO)
 p.cabecera_cultivo()
 p.tarjeta("k_exp", 32, 116, 290, 100, EXP, "Exportaciones 2025 (USD)", "1000000D", [anio("f", [2025])])
@@ -569,7 +573,7 @@ paginas.append(p)
 
 # 6. Contraste: compara todos los cultivos, así que sus segmentadores no se sincronizan.
 p = Pagina("p5contraste", "Berries frente a otros cultivos", T_CONTRASTE,
-           "Valor de la producción por hectárea cosechada, 2025 (SIAP, pesos corrientes) y saldo comercial 2025 (DataMéxico, USD) · sin filtro se ven los ocho cultivos",
+           "Valor por hectárea cosechada, 2025 (SIAP, MXN) y saldo comercial 2025 (DataMéxico, USD)",
            ancho_titulo=ANCHO)
 p.cabecera_cultivo(sincro=False)
 p.grafico("g_vxha", "clusteredBarChart", 32, 116, 600, 356, CULTIVO, VXHA,
